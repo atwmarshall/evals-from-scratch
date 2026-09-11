@@ -1,5 +1,7 @@
 # evals-from-scratch
 
+[![CI](https://github.com/atwmarshall/evals/actions/workflows/ci.yml/badge.svg)](https://github.com/atwmarshall/evals/actions/workflows/ci.yml)
+
 A project to build a working LLM evaluation framework from first principles.
 
 **Goal**: understand how evals work — and why they're hard — by building every layer yourself.
