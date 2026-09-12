@@ -1,11 +1,28 @@
 # evals-from-scratch
 
-[![CI](https://github.com/atwmarshall/evals/actions/workflows/ci.yml/badge.svg)](https://github.com/atwmarshall/evals/actions/workflows/ci.yml)
+[![CI](https://github.com/atwmarshall/evals-from-scratch/actions/workflows/ci.yml/badge.svg)](https://github.com/atwmarshall/evals-from-scratch/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
 
-A project to build a working LLM evaluation framework from first principles.
+An LLM evaluation framework built from first principles — no eval libraries, no wrappers.
 
-**Goal**: understand how evals work — and why they're hard — by building every layer yourself.
-**Stack**: Python 3.11+, Ollama, no eval frameworks.
+Nine scorers, from exact match through JSON schema with partial credit to LLM judge and
+RAG faithfulness, plus two analyses most frameworks leave out:
+
+- **Sensitivity** — hold the model fixed, vary the input phrasing, measure how far the
+  *scorer's* output moves. Can I trust my ruler?
+- **Robustness** — hold the scorer fixed, perturb the input adversarially, measure how far
+  the *model* degrades.
+
+Run sensitivity first. If scorer variance is ±0.1, a robustness delta of 0.08 is noise and
+means nothing. Sensitivity analysis separates three model roles — evaluated model, judge,
+and variation generator — and exits if the variation generator and judge are the same
+model, because using one model to both generate and score variations measures
+self-consistency, not reliability.
+
+**Stack**: Python 3.11+, Ollama.
+
+Built by working through every layer, to understand how evals behave and why they are hard.
 
 ---
 

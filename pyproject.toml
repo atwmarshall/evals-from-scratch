@@ -1,8 +1,10 @@
 [project]
 name = "evals-from-scratch"
 version = "0.1.0"
-description = "LLM evaluation framework built from first principles"
+description = "LLM evaluation framework built from first principles - nine scorers, plus scorer-reliability and model-robustness analysis. No eval libraries."
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "ollama>=0.4.0",
     "tqdm>=4.66.0",
