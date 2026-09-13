@@ -4,10 +4,13 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
 
-An LLM evaluation framework built from first principles — no eval libraries, no wrappers.
+**Before you trust an eval score, measure the ruler.**
+
+An LLM evaluation framework built one layer at a time — scorers, runner, reporters — so that
+the ways evals mislead you are visible instead of abstracted away.
 
 Nine scorers, from exact match through JSON schema with partial credit to LLM judge and
-RAG faithfulness, plus two analyses most frameworks leave out:
+RAG faithfulness, plus two analyses most harnesses leave out:
 
 - **Sensitivity** — hold the model fixed, vary the input phrasing, measure how far the
   *scorer's* output moves. Can I trust my ruler?
@@ -20,9 +23,13 @@ and variation generator — and exits if the variation generator and judge are t
 model, because using one model to both generate and score variations measures
 self-consistency, not reliability.
 
-**Stack**: Python 3.11+, Ollama.
+**Stack**: Python 3.11+, Ollama. Checked with ruff, mypy and 262 tests that never touch the
+network.
 
-Built by working through every layer, to understand how evals behave and why they are hard.
+Written from scratch rather than on top of an existing harness, because the failure modes
+*are* the subject here — and a wrapper hides the layer worth studying. See
+[docs/FAILURE_MODES.md](docs/FAILURE_MODES.md) for the ones this turned up, and
+[docs/OPEN_PROBLEMS.md](docs/OPEN_PROBLEMS.md) for what is still unsolved.
 
 ---
 
