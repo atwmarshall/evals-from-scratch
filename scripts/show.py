@@ -1,12 +1,12 @@
-from __future__ import annotations
-
-"""inspect.py — read benchmark/run/sample results without opening files manually.
+"""show.py — read benchmark/run/sample results without opening files manually.
 
 Usage:
-  inspect.py <path>              auto-detect type (benchmark dir / run dir / .jsonl)
-  inspect.py <path> --id c3-001  show one sample in full (jsonl or benchmark model jsonl)
-  inspect.py <path> --verbose    include full completions in error listings
+  show.py <path>              auto-detect type (benchmark dir / run dir / .jsonl)
+  show.py <path> --id c3-001  show one sample in full (jsonl or benchmark model jsonl)
+  show.py <path> --verbose    include full completions in error listings
 """
+
+from __future__ import annotations
 
 import argparse
 import json
@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 
 from tabulate import tabulate
-
 
 # ---------------------------------------------------------------------------
 # helpers
@@ -49,8 +48,10 @@ def _is_strict_failure(r: dict) -> bool:
 def _outcome(row: dict) -> str:
     score = row.get("score")
     if score is not None:
-        if score >= 1.0:  return "pass"
-        if score >= 0.5:  return "partial"
+        if score >= 1.0:
+            return "pass"
+        if score >= 0.5:
+            return "partial"
         return "fail"
     return "error"
 
@@ -165,7 +166,7 @@ def inspect_sensitivity(
             f"{mv:.4f}" if mv is not None else "—",
         ])
 
-    print(f"\n── PER-VARIATION SUMMARY ──")
+    print("\n── PER-VARIATION SUMMARY ──")
     print(tabulate(pv_rows, headers=pv_headers, tablefmt="simple"))
 
     summary = meta.get("summary", {})
@@ -578,7 +579,7 @@ def inspect_traces(traces_dir: Path, verbose: bool, failures_only: bool = False)
                    tablefmt="simple"))
 
     if verbose:
-        for tf, t, s in display:
+        for tf, t, _s in display:
             if t.get("error"):
                 print(f"\n── {tf.stem} ──")
                 print(f"raw_response: {_short(t.get('raw_response', ''), 400)}")

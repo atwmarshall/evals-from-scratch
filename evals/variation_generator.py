@@ -321,4 +321,4 @@ class VariationGenerator:
             messages=[{"role": "user", "content": prompt}],
             options={"temperature": 0.0},
         )
-        return response.message.content.strip()
+        return (response.message.content or "").strip()

@@ -33,14 +33,15 @@ class Reporter:
         total_errors = api_errors + parse_failures
         error_rate = total_errors / n if n else 0.0
 
+        clean_rate: float | None = None
+        format_pass_rate: float | None = None
+        repair_failure_rate: float | None = None
         statuses = [r.metadata["format_status"] for r in results if "format_status" in r.metadata]
         if statuses:
             n_status = len(statuses)
             clean_rate = sum(1 for s in statuses if s == "clean") / n_status
             format_pass_rate = sum(1 for s in statuses if s in ("clean", "repaired")) / n_status
             repair_failure_rate = sum(1 for s in statuses if s == "repair_failed") / n_status
-        else:
-            clean_rate = format_pass_rate = repair_failure_rate = None
 
         tiers = [r.metadata["tier_used"] for r in results if "tier_used" in r.metadata]
         judge_rate = sum(1 for t in tiers if t == "judge") / len(tiers) if tiers else None
@@ -62,9 +63,12 @@ class Reporter:
 
     @staticmethod
     def _outcome_str(r: RunResult) -> str:
-        if r.score is None:   return "error"
-        if r.score >= 1.0:    return "pass"
-        if r.score >= 0.5:    return "partial"
+        if r.score is None:
+            return "error"
+        if r.score >= 1.0:
+            return "pass"
+        if r.score >= 0.5:
+            return "partial"
         return "fail"
 
     def report(
@@ -240,7 +244,7 @@ class Reporter:
 
         if has_format or has_judge:
             extended_rows = []
-            for (model_id, _), base_row in zip(model_results, table_rows):
+            for (model_id, _), base_row in zip(model_results, table_rows, strict=True):
                 s = summaries[model_id]
                 row = list(base_row)
                 if has_format:

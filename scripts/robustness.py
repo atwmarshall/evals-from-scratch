@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """robustness.py — measure model robustness across adversarially perturbed inputs.
 
 Flow:
@@ -14,6 +12,8 @@ noise floor. If scorer variance is ±0.1 and a robustness delta is 0.08, the sig
 is within noise and uninterpretable.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -21,12 +21,11 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-
 from evals.core import Dataset, EvalConfig
-from evals.runner import Runner
-from evals.scorer_factory import SCORER_CHOICES, build_scorer
 from evals.perturbation_generator import PerturbationGenerator
 from evals.robustness_reporter import RobustnessReporter
+from evals.runner import Runner
+from evals.scorer_factory import SCORER_CHOICES, build_scorer
 
 logger = logging.getLogger(__name__)
 
