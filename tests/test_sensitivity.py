@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from evals.core import Dataset, EvalConfig, RunResult, Sample, ScorerContext
+from evals.core import Dataset, EvalConfig, RunResult, Sample
 from evals.sensitivity_reporter import run_variations
 
 

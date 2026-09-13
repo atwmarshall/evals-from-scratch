@@ -4,7 +4,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from evals.core import Dataset, EvalConfig, RunResult, Sample, ScorerContext
 from evals.reporters import Reporter
 from evals.scorers.llm_judge import LLMJudgeScorer

@@ -3,7 +3,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-
 from evals.core import ScorerContext
 
 # _parse_response is tested by instantiating LLMJudgeScorer with a tmp trace dir

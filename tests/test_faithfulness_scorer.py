@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
-
 from evals.core import DatasetScorer, ScorerContext
 from evals.scorers.context_sufficiency import ContextSufficiencyScorer
 from evals.scorers.faithfulness import FaithfulnessScorer

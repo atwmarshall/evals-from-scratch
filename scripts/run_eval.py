@@ -4,12 +4,11 @@ import argparse
 from pathlib import Path
 
 from dotenv import load_dotenv
-from tqdm import tqdm
-
 from evals.core import Dataset, EvalConfig
 from evals.reporters import Reporter
 from evals.runner import Runner
 from evals.scorer_factory import SCORER_CHOICES, build_scorer
+from tqdm import tqdm
 
 
 def main() -> None:

@@ -4,10 +4,8 @@ import json
 import statistics
 
 import pytest
-
-from evals.core import Dataset, RunResult, Sample
+from evals.core import RunResult, Sample
 from evals.sensitivity_reporter import SensitivityReporter
-
 
 # ---------------------------------------------------------------------------
 # helpers

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from evals.scorers._json_utils import _repair_truncated_json
 
 

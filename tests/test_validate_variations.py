@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-
 from evals.core import Dataset, Sample
 from evals.variation_generator import VariationGenerator
 
@@ -128,7 +126,7 @@ class TestSaveVariations:
         ds = _make_dataset("a", "b")
         validated = {"baseline": ds, "rephrase": ds}
         original = {"baseline": ds, "rephrase": ds}
-        out = gen.save_variations(validated, original, "datasets/test.jsonl", threshold=0.8, output_dir=tmp_path)
+        gen.save_variations(validated, original, "datasets/test.jsonl", threshold=0.8, output_dir=tmp_path)
         assert (tmp_path / "rephrase.jsonl").exists()
         assert not (tmp_path / "baseline.jsonl").exists()
 
