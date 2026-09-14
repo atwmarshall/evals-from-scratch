@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from evals.core import AnyScorer
 from evals.scorers.cascade import CascadeScorer
@@ -14,7 +15,7 @@ from evals.scorers.schema import JSONSchemaScorer
 
 SCORER_CHOICES = "exact, normalised, regex, multi-regex, schema, judge, cascade, faithfulness, context-sufficiency"
 
-_EXTRACTION_SCHEMA: dict = {
+_EXTRACTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "company": {"type": "string"},

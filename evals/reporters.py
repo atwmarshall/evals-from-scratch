@@ -6,6 +6,7 @@ import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -20,7 +21,7 @@ def _sanitise_model(model: str) -> str:
 class Reporter:
     results_dir: Path = field(default_factory=lambda: Path(os.environ.get("RESULTS_DIR", "results")))
 
-    def _summarise(self, results: list[RunResult]) -> dict:
+    def _summarise(self, results: list[RunResult]) -> dict[str, Any]:
         latencies = [r.latency_ms for r in results]
         scores = [r.score for r in results if r.score is not None]
         api_errors = sum(1 for r in results if r.error and r.score is None and r.completion is None)
@@ -163,7 +164,7 @@ class Reporter:
 
         with (run_dir / "samples.jsonl").open("w") as f:
             for r in results:
-                record: dict = {
+                record: dict[str, Any] = {
                     "id": r.sample.id,
                     "expected": r.sample.expected,
                     "score": r.score,
@@ -195,7 +196,7 @@ class Reporter:
         )
         bench_dir.mkdir(parents=True, exist_ok=True)
 
-        summaries: dict[str, dict] = {}
+        summaries: dict[str, dict[str, Any]] = {}
         table_rows = []
 
         for model_id, results in model_results:
@@ -218,7 +219,7 @@ class Reporter:
             safe_model = _sanitise_model(model_id)
             with (bench_dir / f"{safe_model}.jsonl").open("w") as f:
                 for r in results:
-                    record: dict = {
+                    record: dict[str, Any] = {
                         "id": r.sample.id,
                         "expected": r.sample.expected,
                         "score": r.score,

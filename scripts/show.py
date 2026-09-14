@@ -12,6 +12,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -19,7 +20,7 @@ from tabulate import tabulate
 # helpers
 # ---------------------------------------------------------------------------
 
-def _load_jsonl(path: Path) -> list[dict]:
+def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows = []
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -35,17 +36,17 @@ def _short(text: str | None, n: int = 200) -> str:
     return text[:n] + "…" if len(text) > n else text
 
 
-def _is_failure(r: dict) -> bool:
+def _is_failure(r: dict[str, Any]) -> bool:
     s = r.get("score")
     return s is None or s < 1.0
 
 
-def _is_strict_failure(r: dict) -> bool:
+def _is_strict_failure(r: dict[str, Any]) -> bool:
     s = r.get("score")
     return s is None or s < 0.5
 
 
-def _outcome(row: dict) -> str:
+def _outcome(row: dict[str, Any]) -> str:
     score = row.get("score")
     if score is not None:
         if score >= 1.0:
@@ -56,7 +57,7 @@ def _outcome(row: dict) -> str:
     return "error"
 
 
-def _find_trace(results_dir: Path, date: str, model_id: str, sample_id: str) -> dict | None:
+def _find_trace(results_dir: Path, date: str, model_id: str, sample_id: str) -> dict[str, Any] | None:
     """Locate a judge trace JSON for a given model+sample under results/judge_traces/{date}/."""
     traces_root = results_dir / "judge_traces" / date
     if not traces_root.exists():
@@ -67,7 +68,8 @@ def _find_trace(results_dir: Path, date: str, model_id: str, sample_id: str) -> 
         if session_dir.name.endswith(suffix):
             trace_file = session_dir / f"{sample_id}.json"
             if trace_file.exists():
-                return json.loads(trace_file.read_text())
+                trace: dict[str, Any] = json.loads(trace_file.read_text())
+                return trace
     return None
 
 
@@ -291,7 +293,7 @@ def inspect_benchmark(bench_dir: Path, verbose: bool, sample_id: str | None = No
 
 def _benchmark_sample(
     bench_dir: Path,
-    meta: dict,
+    meta: dict[str, Any],
     results_dir: Path,
     date: str,
     sample_id: str,

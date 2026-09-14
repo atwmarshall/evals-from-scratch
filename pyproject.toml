@@ -54,8 +54,4 @@ ignore = ["E501"]
 [tool.mypy]
 python_version = "3.11"
 files = ["evals", "scripts", "runners"]
-warn_redundant_casts = true
-warn_unused_ignores = true
-no_implicit_optional = true
-# Not --strict: most of the codebase is annotated, but untyped test helpers and
-# argparse Namespace access would drown the signal. Tighten when that stops being true.
+strict = true

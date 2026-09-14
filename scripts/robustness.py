@@ -19,10 +19,11 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
-from evals.core import Dataset, EvalConfig
+from evals.core import Dataset, EvalConfig, RunResult
 from evals.perturbation_generator import PerturbationGenerator
 from evals.robustness_reporter import RobustnessReporter
 from evals.runner import Runner
@@ -116,7 +117,7 @@ def main() -> None:
     n_perturbations = len([k for k in perturbations if k != "baseline"])
     print(f"Running {len(perturbations)} perturbation(s) ({n_perturbations} + baseline) through {config.model}...")
 
-    results_by_perturbation: dict = {}
+    results_by_perturbation: dict[str, list[RunResult]] = {}
     for name, dataset in perturbations.items():
         if len(dataset) == 0:
             logger.warning("skipping %r — empty dataset after perturbation failures", name)
@@ -128,7 +129,7 @@ def main() -> None:
         sys.exit("No perturbation results — all datasets were empty.")
 
     # --- report ---
-    reporter_kwargs: dict = {}
+    reporter_kwargs: dict[str, Any] = {}
     if args.output:
         reporter_kwargs["results_dir"] = Path(args.output)
     reporter = RobustnessReporter(**reporter_kwargs)

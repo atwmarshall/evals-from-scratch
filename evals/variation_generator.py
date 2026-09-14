@@ -6,6 +6,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import ollama
 
@@ -100,7 +101,7 @@ class VariationGenerator:
         variations: dict[str, Dataset],
         validation_scorer: ScorerCallable,
         threshold: float = 0.8,
-    ) -> tuple[dict[str, Dataset], list[dict]]:
+    ) -> tuple[dict[str, Dataset], list[dict[str, Any]]]:
         """Return a filtered copy of `variations` where per-sample validity is confirmed,
         plus a list of discarded entries for audit.
 
@@ -123,7 +124,7 @@ class VariationGenerator:
             id, variation, varied_input, expected, validity_score (float | None).
         """
         validated: dict[str, Dataset] = {}
-        discards: list[dict] = []
+        discards: list[dict[str, Any]] = []
 
         for variation_name, dataset in variations.items():
             if variation_name == "baseline":
@@ -203,7 +204,7 @@ class VariationGenerator:
         original: dict[str, Dataset],
         source_path: str | Path,
         threshold: float,
-        discards: list[dict] | None = None,
+        discards: list[dict[str, Any]] | None = None,
         output_dir: Path | str | None = None,
     ) -> Path:
         """Save validated variation datasets to datasets/generated/sensitivity/.

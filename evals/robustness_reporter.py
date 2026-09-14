@@ -8,6 +8,7 @@ import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -52,7 +53,7 @@ class RobustnessReporter:
         dataset_name: str,
         scorer_name: str,
         model: str = "unknown",
-        run_config: dict | None = None,
+        run_config: dict[str, Any] | None = None,
     ) -> tuple[str, Path]:
         """Compute robustness metrics, format tables, save artefacts.
 
@@ -193,7 +194,7 @@ class RobustnessReporter:
         self,
         results_by_perturbation: dict[str, list[RunResult]],
         perturbation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Build lookup: perturbation_name -> sample_id -> score
         scores_lookup: dict[str, dict[str, float | None]] = {}
         all_ids_ordered: list[str] = []
@@ -209,7 +210,7 @@ class RobustnessReporter:
 
         rows = []
         for sample_id in sorted(all_ids_ordered):
-            row: dict = {"id": sample_id}
+            row: dict[str, Any] = {"id": sample_id}
 
             for name in perturbation_names:
                 row[name] = scores_lookup[name].get(sample_id)
@@ -241,9 +242,9 @@ class RobustnessReporter:
     def _compute_per_perturbation(
         self,
         results_by_perturbation: dict[str, list[RunResult]],
-        per_sample_rows: list[dict],
+        per_sample_rows: list[dict[str, Any]],
         perturbation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Baseline mean for delta calculation
         baseline_mean: float | None = None
         if "baseline" in perturbation_names:

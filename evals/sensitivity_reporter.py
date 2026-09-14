@@ -7,6 +7,7 @@ import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -75,7 +76,7 @@ class SensitivityReporter:
         dataset_name: str,
         scorer_name: str,
         model: str = "unknown",
-        run_config: dict | None = None,
+        run_config: dict[str, Any] | None = None,
     ) -> tuple[str, Path]:
         """Compute sensitivity metrics, format tables, save artefacts.
 
@@ -210,7 +211,7 @@ class SensitivityReporter:
         self,
         results_by_variation: dict[str, list[RunResult]],
         variation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Build lookup: variation_name -> sample_id -> score
         scores_lookup: dict[str, dict[str, float | None]] = {}
         all_ids_ordered: list[str] = []
@@ -226,7 +227,7 @@ class SensitivityReporter:
 
         rows = []
         for sample_id in sorted(all_ids_ordered):
-            row: dict = {"id": sample_id}
+            row: dict[str, Any] = {"id": sample_id}
 
             for name in variation_names:
                 row[name] = scores_lookup[name].get(sample_id)
@@ -248,9 +249,9 @@ class SensitivityReporter:
     def _compute_per_variation(
         self,
         results_by_variation: dict[str, list[RunResult]],
-        per_sample_rows: list[dict],
+        per_sample_rows: list[dict[str, Any]],
         variation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Baseline mean for delta calculation
         baseline_mean: float | None = None
         if "baseline" in variation_names:

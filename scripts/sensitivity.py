@@ -15,6 +15,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -147,7 +148,7 @@ def main() -> None:
         sys.exit("No variation results — all datasets were empty after validation.")
 
     # --- report ---
-    reporter_kwargs: dict = {}
+    reporter_kwargs: dict[str, Any] = {}
     if args.output:
         reporter_kwargs["results_dir"] = Path(args.output)
     reporter = SensitivityReporter(**reporter_kwargs)
