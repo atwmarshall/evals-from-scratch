@@ -15,6 +15,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -35,47 +36,61 @@ def main() -> None:
     parser.add_argument("--scorer", required=True, help=f"Scorer to test ({SCORER_CHOICES})")
     parser.add_argument("--model", default=None, help="Model to evaluate (overrides DEFAULT_MODEL)")
     parser.add_argument(
-        "--variations", nargs="+", default=None,
+        "--variations",
+        nargs="+",
+        default=None,
         help="Variation types to run (default: all 5 — synonym_swap rephrase add_noise formal concise)",
     )
     parser.add_argument("--limit", type=int, default=None, help="Max samples")
     parser.add_argument(
-        "--validation-threshold", type=float, default=0.8,
+        "--validation-threshold",
+        type=float,
+        default=0.8,
         help="Min judge score for a variation to be considered meaning-preserving (default: 0.8)",
     )
     parser.add_argument(
-        "--no-save-variations", action="store_true",
+        "--no-save-variations",
+        action="store_true",
         help="Skip saving generated variations to datasets/generated/sensitivity/ "
-             "(ignored when --reuse-variations is set)",
+        "(ignored when --reuse-variations is set)",
     )
     parser.add_argument(
-        "--reuse-variations", default=None, metavar="DIR",
+        "--reuse-variations",
+        default=None,
+        metavar="DIR",
         help="Reuse previously saved variations from this directory instead of generating new ones",
     )
     parser.add_argument("--output", default=None, help="Results directory (overrides RESULTS_DIR)")
     # Scorer-specific flags (passed through to build_scorer)
-    parser.add_argument("--pattern", default=None, help="Regex pattern for regex/multi-regex scorers")
+    parser.add_argument(
+        "--pattern", default=None, help="Regex pattern for regex/multi-regex scorers"
+    )
     parser.add_argument("--schema", default=None, help="Path to JSON schema file for schema scorer")
     parser.add_argument("--scale", type=int, default=5, help="Judge score scale (default: 5)")
     parser.add_argument(
-        "--judge-model", default=None,
+        "--judge-model",
+        default=None,
         help="Model for LLM judge — used for both eval scorer and variation validation (overrides JUDGE_MODEL)",
     )
     parser.add_argument(
-        "--fast-tier", default="normalised", choices=["exact", "normalised"],
+        "--fast-tier",
+        default="normalised",
+        choices=["exact", "normalised"],
         help="Fast tier for cascade scorer (default: normalised)",
     )
     parser.add_argument(
-        "--cascade-threshold", type=float, default=1.0,
+        "--cascade-threshold",
+        type=float,
+        default=1.0,
         help="Fast-tier threshold for cascade scorer (default: 1.0). "
-             "Separate from --validation-threshold which controls variation filtering.",
+        "Separate from --validation-threshold which controls variation filtering.",
     )
     args = parser.parse_args()
 
     # --- resolve models ---
     config = EvalConfig(model=args.model) if args.model else EvalConfig()
-    variation_model = (
-        os.environ.get("VARIATION_MODEL") or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+    variation_model = os.environ.get("VARIATION_MODEL") or os.environ.get(
+        "DEFAULT_MODEL", "llama3.2:3b"
     )
     judge_model = args.judge_model or os.environ.get("JUDGE_MODEL", "llama3.2:3b")
 
@@ -119,7 +134,9 @@ def main() -> None:
         print(f"Generating variations using {gen.model}...")
         raw_variations = gen.generate(ds, variations=args.variations)
 
-        print(f"Validating variations (threshold={args.validation_threshold}, judge={judge_model})...")
+        print(
+            f"Validating variations (threshold={args.validation_threshold}, judge={judge_model})..."
+        )
         variations, discards = gen.validate_variations(
             raw_variations,
             validation_scorer=validation_judge,
@@ -140,14 +157,16 @@ def main() -> None:
 
     # --- run variations ---
     n_variations = len([k for k in variations if k != "baseline"])
-    print(f"Running {len(variations)} variation(s) ({n_variations} + baseline) through {config.model}...")
+    print(
+        f"Running {len(variations)} variation(s) ({n_variations} + baseline) through {config.model}..."
+    )
     results_by_variation = run_variations(variations, scorer, config)
 
     if not results_by_variation:
         sys.exit("No variation results — all datasets were empty after validation.")
 
     # --- report ---
-    reporter_kwargs: dict = {}
+    reporter_kwargs: dict[str, Any] = {}
     if args.output:
         reporter_kwargs["results_dir"] = Path(args.output)
     reporter = SensitivityReporter(**reporter_kwargs)

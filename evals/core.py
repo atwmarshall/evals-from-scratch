@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 
 @dataclass
@@ -13,7 +13,7 @@ class Sample:
     id: str
     input: str
     expected: str
-    metadata: dict
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -34,12 +34,14 @@ class Dataset:
                 for key in obj:
                     if key not in {"id", "input", "expected", "metadata"}:
                         metadata[key] = obj[key]
-                samples.append(Sample(
-                    id=obj["id"],
-                    input=obj["input"],
-                    expected=obj["expected"],
-                    metadata=metadata,
-                ))
+                samples.append(
+                    Sample(
+                        id=obj["id"],
+                        input=obj["input"],
+                        expected=obj["expected"],
+                        metadata=metadata,
+                    )
+                )
         if limit is not None:
             samples = samples[:limit]
         return cls(samples=samples)
@@ -47,7 +49,7 @@ class Dataset:
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Sample]:
         return iter(self.samples)
 
 
@@ -58,7 +60,7 @@ class RunResult:
     score: float | None
     latency_ms: int
     error: str | None
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -75,8 +77,8 @@ class ScorerContext:
     """
 
     input: str = ""
-    metadata: dict = field(default_factory=dict)
-    metadata_out: dict = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata_out: dict[str, Any] = field(default_factory=dict)
 
 
 ScorerCallable = Callable[[str, str, ScorerContext], float | None]
@@ -92,6 +94,7 @@ class DatasetScorer:
     sufficiency is low for a sample, remove it — a bad sample produces
     misleading model scores regardless of scorer quality.
     """
+
     pass
 
 

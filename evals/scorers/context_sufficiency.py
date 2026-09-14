@@ -46,9 +46,7 @@ class ContextSufficiencyScorer(DatasetScorer):
         if not chunks:
             return 0.0
 
-        prompt = _SUFFICIENCY_PROMPT.format(
-            context="\n".join(chunks), expected=expected
-        )
+        prompt = _SUFFICIENCY_PROMPT.format(context="\n".join(chunks), expected=expected)
 
         try:
             response = self._client.chat(

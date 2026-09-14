@@ -92,22 +92,27 @@ class Runner:
                         if attempt < config.max_retries - 1:
                             logger.warning(
                                 "sample=%s attempt=%d error=%s — retrying in %ds",
-                                sample.id, attempt, e, 2 ** attempt,
+                                sample.id,
+                                attempt,
+                                e,
+                                2**attempt,
                             )
-                            time.sleep(2 ** attempt)
+                            time.sleep(2**attempt)
                         else:
                             logger.error("sample=%s final failure: %s", sample.id, e)
 
                 if last_error is not None:
                     error = str(last_error)
 
-            results.append(RunResult(
-                sample=sample,
-                completion=completion,
-                score=score,
-                latency_ms=latency_ms,
-                error=error,
-                metadata=ctx.metadata_out,
-            ))
+            results.append(
+                RunResult(
+                    sample=sample,
+                    completion=completion,
+                    score=score,
+                    latency_ms=latency_ms,
+                    error=error,
+                    metadata=ctx.metadata_out,
+                )
+            )
 
         return results

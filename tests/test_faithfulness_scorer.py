@@ -50,7 +50,9 @@ class TestFaithfulnessScorer:
         ctx = _ctx(context=["The capital of Australia is Canberra."])
         scorer._client = MagicMock()
 
-        scorer._client.chat.return_value = _mock_response('{"score": 5, "reasoning": "fully supported"}')
+        scorer._client.chat.return_value = _mock_response(
+            '{"score": 5, "reasoning": "fully supported"}'
+        )
         assert scorer("Canberra.", "Canberra", ctx) == pytest.approx(1.0)
 
         scorer._client.chat.return_value = _mock_response('{"score": 1, "reasoning": "no support"}')
@@ -109,6 +111,7 @@ class TestContextSufficiencyScorer:
 
     def test_no_completion_arg(self, scorer):
         import inspect
+
         sig = inspect.signature(scorer.__call__)
         assert list(sig.parameters) == ["expected", "ctx"]
 
@@ -128,7 +131,9 @@ class TestContextSufficiencyScorer:
 
     def test_no_response_returns_0(self, scorer):
         scorer._client = MagicMock()
-        scorer._client.chat.return_value = _mock_response('{"answer": "NO", "reasoning": "Canberra is not mentioned."}')
+        scorer._client.chat.return_value = _mock_response(
+            '{"answer": "NO", "reasoning": "Canberra is not mentioned."}'
+        )
         ctx = _ctx(context=["Sydney is a city in New South Wales."])
         assert scorer("Canberra", ctx) == 0.0
 
@@ -174,7 +179,10 @@ class TestContextSufficiencyScorer:
         ctx = _ctx(context=["Some context."])
         scorer("expected", ctx)
         assert ctx.metadata_out.get("context_sufficiency_format_status") == "clean"
-        assert ctx.metadata_out.get("sufficiency_reasoning") == "Context only mentions Sydney, not Canberra."
+        assert (
+            ctx.metadata_out.get("sufficiency_reasoning")
+            == "Context only mentions Sydney, not Canberra."
+        )
 
     def test_format_status_repair_failed_on_parse_failure(self, scorer):
         scorer._client = MagicMock()
@@ -192,7 +200,9 @@ class TestContextSufficiencyScorer:
     def test_not_enough_information_returns_none(self, scorer):
         # Plausible non-JSON LLM response — no valid answer field
         scorer._client = MagicMock()
-        scorer._client.chat.return_value = _mock_response("Not enough information to determine this.")
+        scorer._client.chat.return_value = _mock_response(
+            "Not enough information to determine this."
+        )
         ctx = _ctx(context=["Some context."])
         assert scorer("expected", ctx) is None
 

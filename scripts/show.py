@@ -12,6 +12,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -19,7 +20,8 @@ from tabulate import tabulate
 # helpers
 # ---------------------------------------------------------------------------
 
-def _load_jsonl(path: Path) -> list[dict]:
+
+def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows = []
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -35,17 +37,17 @@ def _short(text: str | None, n: int = 200) -> str:
     return text[:n] + "…" if len(text) > n else text
 
 
-def _is_failure(r: dict) -> bool:
+def _is_failure(r: dict[str, Any]) -> bool:
     s = r.get("score")
     return s is None or s < 1.0
 
 
-def _is_strict_failure(r: dict) -> bool:
+def _is_strict_failure(r: dict[str, Any]) -> bool:
     s = r.get("score")
     return s is None or s < 0.5
 
 
-def _outcome(row: dict) -> str:
+def _outcome(row: dict[str, Any]) -> str:
     score = row.get("score")
     if score is not None:
         if score >= 1.0:
@@ -56,7 +58,9 @@ def _outcome(row: dict) -> str:
     return "error"
 
 
-def _find_trace(results_dir: Path, date: str, model_id: str, sample_id: str) -> dict | None:
+def _find_trace(
+    results_dir: Path, date: str, model_id: str, sample_id: str
+) -> dict[str, Any] | None:
     """Locate a judge trace JSON for a given model+sample under results/judge_traces/{date}/."""
     traces_root = results_dir / "judge_traces" / date
     if not traces_root.exists():
@@ -67,13 +71,15 @@ def _find_trace(results_dir: Path, date: str, model_id: str, sample_id: str) -> 
         if session_dir.name.endswith(suffix):
             trace_file = session_dir / f"{sample_id}.json"
             if trace_file.exists():
-                return json.loads(trace_file.read_text())
+                trace: dict[str, Any] = json.loads(trace_file.read_text())
+                return trace
     return None
 
 
 # ---------------------------------------------------------------------------
 # sensitivity mode
 # ---------------------------------------------------------------------------
+
 
 def inspect_sensitivity(
     sens_dir: Path,
@@ -116,8 +122,10 @@ def inspect_sensitivity(
             [
                 name,
                 f"{row[name]:.3f}" if row.get(name) is not None else "—",
-                "anchor" if name == "baseline"
-                else "discarded" if row.get(name) is None
+                "anchor"
+                if name == "baseline"
+                else "discarded"
+                if row.get(name) is None
                 else row.get("verdict", "—"),
             ]
             for name in variation_names
@@ -159,12 +167,14 @@ def inspect_sensitivity(
         ms = row.get("mean_score")
         delta = row.get("delta_from_baseline")
         mv = row.get("mean_variance")
-        pv_rows.append([
-            row["variation"],
-            f"{ms:.3f}" if ms is not None else "—",
-            f"{delta:+.3f}" if delta is not None else "—",
-            f"{mv:.4f}" if mv is not None else "—",
-        ])
+        pv_rows.append(
+            [
+                row["variation"],
+                f"{ms:.3f}" if ms is not None else "—",
+                f"{delta:+.3f}" if delta is not None else "—",
+                f"{mv:.4f}" if mv is not None else "—",
+            ]
+        )
 
     print("\n── PER-VARIATION SUMMARY ──")
     print(tabulate(pv_rows, headers=pv_headers, tablefmt="simple"))
@@ -183,7 +193,14 @@ def inspect_sensitivity(
 # benchmark mode
 # ---------------------------------------------------------------------------
 
-def inspect_benchmark(bench_dir: Path, verbose: bool, sample_id: str | None = None, failures_only: bool = False, strict: bool = False) -> None:
+
+def inspect_benchmark(
+    bench_dir: Path,
+    verbose: bool,
+    sample_id: str | None = None,
+    failures_only: bool = False,
+    strict: bool = False,
+) -> None:
     meta = json.loads((bench_dir / "benchmark.json").read_text())
     date = bench_dir.parent.name  # results/benchmarks/{date}/...
     results_dir = bench_dir.parent.parent.parent  # results/
@@ -191,12 +208,23 @@ def inspect_benchmark(bench_dir: Path, verbose: bool, sample_id: str | None = No
     no_traces_note = ""
     if meta.get("scorer") not in ("judge", "cascade"):
         no_traces_note = "  (no judge traces — scorer is not judge/cascade)"
-    print(f"BENCHMARK  dataset={meta['dataset']}  scorer={meta['scorer']}  {meta['timestamp']}{no_traces_note}")
+    print(
+        f"BENCHMARK  dataset={meta['dataset']}  scorer={meta['scorer']}  {meta['timestamp']}{no_traces_note}"
+    )
     print(f"dir: {bench_dir}\n")
 
     # --- --id: show one sample across all models ---
     if sample_id:
-        _benchmark_sample(bench_dir, meta, results_dir, date, sample_id, verbose, failures_only=failures_only, strict=strict)
+        _benchmark_sample(
+            bench_dir,
+            meta,
+            results_dir,
+            date,
+            sample_id,
+            verbose,
+            failures_only=failures_only,
+            strict=strict,
+        )
         return
 
     # --- comparison table from benchmark.json (suppressed with --failures-only) ---
@@ -227,8 +255,14 @@ def inspect_benchmark(bench_dir: Path, verbose: bool, sample_id: str | None = No
             ]
             if has_format:
                 row.append(f"{s['clean_rate']:.1%}" if s.get("clean_rate") is not None else "—")
-                row.append(f"{s['format_pass_rate']:.1%}" if s.get("format_pass_rate") is not None else "—")
-                row.append(f"{s['repair_failure_rate']:.1%}" if s.get("repair_failure_rate") is not None else "—")
+                row.append(
+                    f"{s['format_pass_rate']:.1%}" if s.get("format_pass_rate") is not None else "—"
+                )
+                row.append(
+                    f"{s['repair_failure_rate']:.1%}"
+                    if s.get("repair_failure_rate") is not None
+                    else "—"
+                )
             if has_judge:
                 row.append(f"{s['judge_rate']:.1%}" if s.get("judge_rate") is not None else "—")
             table_rows.append(row)
@@ -289,9 +323,10 @@ def inspect_benchmark(bench_dir: Path, verbose: bool, sample_id: str | None = No
 # benchmark --id helper: one sample across all models
 # ---------------------------------------------------------------------------
 
+
 def _benchmark_sample(
     bench_dir: Path,
-    meta: dict,
+    meta: dict[str, Any],
     results_dir: Path,
     date: str,
     sample_id: str,
@@ -355,14 +390,25 @@ def _benchmark_sample(
 # run mode
 # ---------------------------------------------------------------------------
 
-def inspect_run(run_dir: Path, verbose: bool, sample_id: str | None = None, failures_only: bool = False, strict: bool = False) -> None:
+
+def inspect_run(
+    run_dir: Path,
+    verbose: bool,
+    sample_id: str | None = None,
+    failures_only: bool = False,
+    strict: bool = False,
+) -> None:
     meta = json.loads((run_dir / "run.json").read_text())
     rows = _load_jsonl(run_dir / "samples.jsonl")
 
-    print(f"RUN  model={meta['model']}  dataset={meta['dataset']}  scorer={meta['scorer']}  {meta['timestamp']}")
+    print(
+        f"RUN  model={meta['model']}  dataset={meta['dataset']}  scorer={meta['scorer']}  {meta['timestamp']}"
+    )
     s = meta["summary"]
     mean = f"{s['mean_score']:.3f}" if s["mean_score"] is not None else "—"
-    print(f"     mean_score={mean}  p50={s['p50_latency_ms']}ms  errors={s['api_errors']+s['parse_failures']}/{s['n']}\n")
+    print(
+        f"     mean_score={mean}  p50={s['p50_latency_ms']}ms  errors={s['api_errors'] + s['parse_failures']}/{s['n']}\n"
+    )
 
     if sample_id:
         matches = [r for r in rows if r.get("id") == sample_id]
@@ -370,7 +416,9 @@ def inspect_run(run_dir: Path, verbose: bool, sample_id: str | None = None, fail
             print(f"Sample {sample_id!r} not found.")
             sys.exit(1)
         r = matches[0]
-        print(f"id={r['id']}  score={r.get('score')}  latency={r.get('latency_ms')}ms  outcome={_outcome(r)}")
+        print(
+            f"id={r['id']}  score={r.get('score')}  latency={r.get('latency_ms')}ms  outcome={_outcome(r)}"
+        )
         if r.get("expected") is not None:
             print(f"expected:  {r['expected']}")
         sm = r.get("scorer_metadata") or {}
@@ -413,7 +461,7 @@ def inspect_run(run_dir: Path, verbose: bool, sample_id: str | None = None, fail
     else:
         display_rows = rows
 
-    has_tier   = any("tier_used"     in (r.get("scorer_metadata") or {}) for r in display_rows)
+    has_tier = any("tier_used" in (r.get("scorer_metadata") or {}) for r in display_rows)
     has_format = any("format_status" in (r.get("scorer_metadata") or {}) for r in display_rows)
 
     table = []
@@ -467,7 +515,14 @@ def inspect_run(run_dir: Path, verbose: bool, sample_id: str | None = None, fail
 # jsonl/sample mode
 # ---------------------------------------------------------------------------
 
-def inspect_jsonl(path: Path, sample_id: str | None, verbose: bool, failures_only: bool = False, strict: bool = False) -> None:
+
+def inspect_jsonl(
+    path: Path,
+    sample_id: str | None,
+    verbose: bool,
+    failures_only: bool = False,
+    strict: bool = False,
+) -> None:
     rows = _load_jsonl(path)
 
     if sample_id:
@@ -490,7 +545,7 @@ def inspect_jsonl(path: Path, sample_id: str | None, verbose: bool, failures_onl
     else:
         display_rows = rows
 
-    has_tier   = any("tier_used"     in (r.get("scorer_metadata") or {}) for r in display_rows)
+    has_tier = any("tier_used" in (r.get("scorer_metadata") or {}) for r in display_rows)
     has_format = any("format_status" in (r.get("scorer_metadata") or {}) for r in display_rows)
 
     table = []
@@ -546,6 +601,7 @@ def inspect_jsonl(path: Path, sample_id: str | None, verbose: bool, failures_onl
 # traces mode
 # ---------------------------------------------------------------------------
 
+
 def inspect_traces(traces_dir: Path, verbose: bool, failures_only: bool = False) -> None:
     """Summarise judge traces under a session directory."""
     trace_files = sorted(traces_dir.glob("*.json"))
@@ -560,7 +616,11 @@ def inspect_traces(traces_dir: Path, verbose: bool, failures_only: bool = False)
         all_rows.append((tf, t, status))
 
     display = [(tf, t, s) for tf, t, s in all_rows if s != "ok"] if failures_only else all_rows
-    label = f"  (failures only: {len(display)}/{len(all_rows)})" if failures_only else f"  ({len(all_rows)} samples)"
+    label = (
+        f"  (failures only: {len(display)}/{len(all_rows)})"
+        if failures_only
+        else f"  ({len(all_rows)} samples)"
+    )
     print(f"TRACES  dir={traces_dir}{label}\n")
 
     rows = [
@@ -574,9 +634,13 @@ def inspect_traces(traces_dir: Path, verbose: bool, failures_only: bool = False)
         ]
         for tf, t, s in display
     ]
-    print(tabulate(rows,
-                   headers=["sample_id", "evaluated_model", "score", "raw_score", "status", "error"],
-                   tablefmt="simple"))
+    print(
+        tabulate(
+            rows,
+            headers=["sample_id", "evaluated_model", "score", "raw_score", "status", "error"],
+            tablefmt="simple",
+        )
+    )
 
     if verbose:
         for tf, t, _s in display:
@@ -589,13 +653,24 @@ def inspect_traces(traces_dir: Path, verbose: bool, failures_only: bool = False)
 # entry point
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Inspect eval results")
     parser.add_argument("path", help="Benchmark dir / run dir / .jsonl file / traces dir")
     parser.add_argument("--id", default=None, help="Show a specific sample by ID")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show full completions")
-    parser.add_argument("--failures-only", "-f", action="store_true", help="Show only samples with score < 1.0 or score=None")
-    parser.add_argument("--strict", "-s", action="store_true", help="Show only genuine failures (score < 0.5 or score=None). Implies --failures-only.")
+    parser.add_argument(
+        "--failures-only",
+        "-f",
+        action="store_true",
+        help="Show only samples with score < 1.0 or score=None",
+    )
+    parser.add_argument(
+        "--strict",
+        "-s",
+        action="store_true",
+        help="Show only genuine failures (score < 0.5 or score=None). Implies --failures-only.",
+    )
     args = parser.parse_args()
 
     if args.strict:
@@ -607,13 +682,27 @@ def main() -> None:
         sys.exit(1)
 
     if path.is_file() and path.suffix == ".jsonl":
-        inspect_jsonl(path, args.id, args.verbose, failures_only=args.failures_only, strict=args.strict)
+        inspect_jsonl(
+            path, args.id, args.verbose, failures_only=args.failures_only, strict=args.strict
+        )
     elif path.is_dir() and (path / "sensitivity.json").exists():
         inspect_sensitivity(path, args.verbose, sample_id=args.id, failures_only=args.failures_only)
     elif path.is_dir() and (path / "benchmark.json").exists():
-        inspect_benchmark(path, args.verbose, sample_id=args.id, failures_only=args.failures_only, strict=args.strict)
+        inspect_benchmark(
+            path,
+            args.verbose,
+            sample_id=args.id,
+            failures_only=args.failures_only,
+            strict=args.strict,
+        )
     elif path.is_dir() and (path / "run.json").exists():
-        inspect_run(path, args.verbose, sample_id=args.id, failures_only=args.failures_only, strict=args.strict)
+        inspect_run(
+            path,
+            args.verbose,
+            sample_id=args.id,
+            failures_only=args.failures_only,
+            strict=args.strict,
+        )
     elif path.is_dir() and any(path.glob("*.json")):
         inspect_traces(path, args.verbose, failures_only=args.failures_only)
     else:
@@ -625,7 +714,9 @@ def main() -> None:
                 for c in candidates:
                     print(f"  {c.name}/")
                 sys.exit(1)
-        print("Expected: benchmark dir (has benchmark.json), run dir (has run.json), .jsonl file, or traces dir")
+        print(
+            "Expected: benchmark dir (has benchmark.json), run dir (has run.json), .jsonl file, or traces dir"
+        )
         sys.exit(1)
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from typing import Any
 
 import jsonschema
 
@@ -33,7 +34,7 @@ class JSONSchemaScorer:
     Handles completions wrapped in markdown code fences (```json ... ```).
     """
 
-    def __init__(self, schema: dict) -> None:
+    def __init__(self, schema: dict[str, Any]) -> None:
         self._schema = schema
 
     def __call__(self, completion: str, expected: str, ctx: ScorerContext) -> float:

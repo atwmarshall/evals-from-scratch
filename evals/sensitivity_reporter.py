@@ -7,6 +7,7 @@ import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from tabulate import tabulate
 
@@ -75,7 +76,7 @@ class SensitivityReporter:
         dataset_name: str,
         scorer_name: str,
         model: str = "unknown",
-        run_config: dict | None = None,
+        run_config: dict[str, Any] | None = None,
     ) -> tuple[str, Path]:
         """Compute sensitivity metrics, format tables, save artefacts.
 
@@ -94,24 +95,27 @@ class SensitivityReporter:
         variation_names = list(results_by_variation.keys())
 
         per_sample = self._compute_per_sample(results_by_variation, variation_names)
-        per_variation = self._compute_per_variation(results_by_variation, per_sample, variation_names)
+        per_variation = self._compute_per_variation(
+            results_by_variation, per_sample, variation_names
+        )
 
         n_unstable = sum(1 for r in per_sample if r["verdict"] == "unstable")
         n_total = len(per_sample)
 
         non_baseline = [
-            r for r in per_variation
+            r
+            for r in per_variation
             if r["variation"] != "baseline" and r["mean_variance"] is not None
         ]
         most_destabilising = (
             max(non_baseline, key=lambda r: r["mean_variance"])["variation"]
-            if non_baseline else None
+            if non_baseline
+            else None
         )
 
         baseline_n = len(results_by_variation.get("baseline", []))
         most_dest_n = (
-            len(results_by_variation.get(most_destabilising, []))
-            if most_destabilising else None
+            len(results_by_variation.get(most_destabilising, [])) if most_destabilising else None
         )
 
         # Per-sample table
@@ -131,12 +135,16 @@ class SensitivityReporter:
         pv_headers = ["variation", "mean_score", "delta_from_baseline", "mean_variance"]
         pv_rows = []
         for row in per_variation:
-            pv_rows.append([
-                row["variation"],
-                f"{row['mean_score']:.3f}" if row["mean_score"] is not None else "—",
-                f"{row['delta_from_baseline']:+.3f}" if row["delta_from_baseline"] is not None else "—",
-                f"{row['mean_variance']:.4f}" if row["mean_variance"] is not None else "—",
-            ])
+            pv_rows.append(
+                [
+                    row["variation"],
+                    f"{row['mean_score']:.3f}" if row["mean_score"] is not None else "—",
+                    f"{row['delta_from_baseline']:+.3f}"
+                    if row["delta_from_baseline"] is not None
+                    else "—",
+                    f"{row['mean_variance']:.4f}" if row["mean_variance"] is not None else "—",
+                ]
+            )
         pv_table = tabulate(pv_rows, headers=pv_headers, tablefmt="simple")
 
         summary_line = f"{n_unstable} unstable / {n_total} samples"
@@ -157,23 +165,27 @@ class SensitivityReporter:
         date = now.strftime("%Y-%m-%d")
         time_str = now.strftime("%H%M%S")
         sens_dir = (
-            self.results_dir / "sensitivity" / date
-            / f"{time_str}_{dataset_name}_{scorer_name}"
+            self.results_dir / "sensitivity" / date / f"{time_str}_{dataset_name}_{scorer_name}"
         )
         sens_dir.mkdir(parents=True, exist_ok=True)
 
         for name, results in results_by_variation.items():
             with (sens_dir / f"{name}.jsonl").open("w") as f:
                 for r in results:
-                    f.write(json.dumps({
-                        "id": r.sample.id,
-                        "expected": r.sample.expected,
-                        "score": r.score,
-                        "latency_ms": r.latency_ms,
-                        "completion": r.completion,
-                        "error": r.error,
-                        "scorer_metadata": r.metadata,
-                    }) + "\n")
+                    f.write(
+                        json.dumps(
+                            {
+                                "id": r.sample.id,
+                                "expected": r.sample.expected,
+                                "score": r.score,
+                                "latency_ms": r.latency_ms,
+                                "completion": r.completion,
+                                "error": r.error,
+                                "scorer_metadata": r.metadata,
+                            }
+                        )
+                        + "\n"
+                    )
 
         payload = {
             "dataset": dataset_name,
@@ -210,7 +222,7 @@ class SensitivityReporter:
         self,
         results_by_variation: dict[str, list[RunResult]],
         variation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Build lookup: variation_name -> sample_id -> score
         scores_lookup: dict[str, dict[str, float | None]] = {}
         all_ids_ordered: list[str] = []
@@ -226,7 +238,7 @@ class SensitivityReporter:
 
         rows = []
         for sample_id in sorted(all_ids_ordered):
-            row: dict = {"id": sample_id}
+            row: dict[str, Any] = {"id": sample_id}
 
             for name in variation_names:
                 row[name] = scores_lookup[name].get(sample_id)
@@ -248,23 +260,20 @@ class SensitivityReporter:
     def _compute_per_variation(
         self,
         results_by_variation: dict[str, list[RunResult]],
-        per_sample_rows: list[dict],
+        per_sample_rows: list[dict[str, Any]],
         variation_names: list[str],
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         # Baseline mean for delta calculation
         baseline_mean: float | None = None
         if "baseline" in variation_names:
             baseline_scores = [
-                row["baseline"] for row in per_sample_rows
-                if row.get("baseline") is not None
+                row["baseline"] for row in per_sample_rows if row.get("baseline") is not None
             ]
             baseline_mean = statistics.mean(baseline_scores) if baseline_scores else None
 
         summary_rows = []
         for name in variation_names:
-            variation_scores = [
-                row[name] for row in per_sample_rows if row.get(name) is not None
-            ]
+            variation_scores = [row[name] for row in per_sample_rows if row.get(name) is not None]
             mean_score = statistics.mean(variation_scores) if variation_scores else None
 
             if name == "baseline":
@@ -277,16 +286,19 @@ class SensitivityReporter:
                     else None
                 )
                 variances = [
-                    row["variance"] for row in per_sample_rows
+                    row["variance"]
+                    for row in per_sample_rows
                     if row.get(name) is not None and row["variance"] is not None
                 ]
                 mean_variance = statistics.mean(variances) if variances else None
 
-            summary_rows.append({
-                "variation": name,
-                "mean_score": mean_score,
-                "delta_from_baseline": delta,
-                "mean_variance": mean_variance,
-            })
+            summary_rows.append(
+                {
+                    "variation": name,
+                    "mean_score": mean_score,
+                    "delta_from_baseline": delta,
+                    "mean_variance": mean_variance,
+                }
+            )
 
         return summary_rows

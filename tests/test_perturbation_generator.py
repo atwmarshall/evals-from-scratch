@@ -10,10 +10,11 @@ from evals.perturbation_generator import PerturbationGenerator
 
 
 def _make_dataset(*ids: str) -> Dataset:
-    return Dataset(samples=[
-        Sample(id=i, input=f"input {i}", expected=f"expected {i}", metadata={})
-        for i in ids
-    ])
+    return Dataset(
+        samples=[
+            Sample(id=i, input=f"input {i}", expected=f"expected {i}", metadata={}) for i in ids
+        ]
+    )
 
 
 def _gen() -> PerturbationGenerator:
@@ -91,7 +92,9 @@ class TestGenerate:
         ds = _make_dataset("a")
         gen._perturb_sample = MagicMock(return_value="perturbed")
         result = gen.generate(ds)
-        assert {"typos", "colloquial", "verbose", "indirect", "multilingual"}.issubset(result.keys())
+        assert {"typos", "colloquial", "verbose", "indirect", "multilingual"}.issubset(
+            result.keys()
+        )
 
 
 class TestSavePerturbations:
@@ -107,7 +110,9 @@ class TestSavePerturbations:
         gen = _gen()
         gen.model = "mistral:7b"
         ds = _make_dataset("a")
-        gen.save_perturbations({"baseline": ds, "typos": ds}, "datasets/test.jsonl", output_dir=tmp_path)
+        gen.save_perturbations(
+            {"baseline": ds, "typos": ds}, "datasets/test.jsonl", output_dir=tmp_path
+        )
         assert not (tmp_path / "baseline.jsonl").exists()
 
     def test_jsonl_content_is_correct(self, tmp_path):
@@ -167,7 +172,9 @@ class TestLoadPerturbations:
         gen = _gen()
         gen.model = "mistral:7b"
         ds = _make_dataset("a", "b")
-        gen.save_perturbations({"typos": ds, "colloquial": ds}, "datasets/test.jsonl", output_dir=tmp_path)
+        gen.save_perturbations(
+            {"typos": ds, "colloquial": ds}, "datasets/test.jsonl", output_dir=tmp_path
+        )
         loaded = PerturbationGenerator.load_perturbations(tmp_path)
         assert set(loaded.keys()) == {"typos", "colloquial"}
         assert len(loaded["typos"].samples) == 2

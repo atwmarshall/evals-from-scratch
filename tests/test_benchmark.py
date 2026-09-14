@@ -35,6 +35,7 @@ def _make_result(
 # BenchmarkRunner
 # ---------------------------------------------------------------------------
 
+
 class TestBenchmarkRunner:
     def test_called_once_per_model(self):
         mock_runner_instance = MagicMock()
@@ -61,7 +62,9 @@ class TestBenchmarkRunner:
         ds = MagicMock(spec=Dataset)
 
         with patch("runners.benchmark.Runner", return_value=mock_runner_instance):
-            BenchmarkRunner().run(ds, scorer, ["alpha", "beta"], base_config=EvalConfig(model="ignored"))
+            BenchmarkRunner().run(
+                ds, scorer, ["alpha", "beta"], base_config=EvalConfig(model="ignored")
+            )
 
         assert captured_configs == ["alpha", "beta"]
 
@@ -93,6 +96,7 @@ class TestBenchmarkRunner:
 # ---------------------------------------------------------------------------
 # Reporter._summarise
 # ---------------------------------------------------------------------------
+
 
 class TestSummarise:
     def test_empty_scores_returns_none_mean(self, tmp_path):
@@ -129,6 +133,7 @@ class TestSummarise:
 # ---------------------------------------------------------------------------
 # Reporter.report — new directory structure
 # ---------------------------------------------------------------------------
+
 
 class TestReport:
     def test_creates_runs_directory_structure(self, tmp_path):
@@ -178,6 +183,7 @@ class TestReport:
 # ---------------------------------------------------------------------------
 # Reporter.benchmark_report
 # ---------------------------------------------------------------------------
+
 
 class TestBenchmarkReport:
     def test_creates_benchmarks_directory_structure(self, tmp_path):
@@ -230,6 +236,7 @@ class TestBenchmarkReport:
 # ---------------------------------------------------------------------------
 # LLMJudgeScorer — evaluated_model + set_evaluated_model
 # ---------------------------------------------------------------------------
+
 
 class TestLLMJudgeScorerEvaluatedModel:
     def test_trace_dir_uses_evaluated_model(self, tmp_path):

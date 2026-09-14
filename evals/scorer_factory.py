@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from evals.core import AnyScorer
 from evals.scorers.cascade import CascadeScorer
@@ -14,7 +15,7 @@ from evals.scorers.schema import JSONSchemaScorer
 
 SCORER_CHOICES = "exact, normalised, regex, multi-regex, schema, judge, cascade, faithfulness, context-sufficiency"
 
-_EXTRACTION_SCHEMA: dict = {
+_EXTRACTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "company": {"type": "string"},
@@ -77,12 +78,14 @@ def build_scorer(
             return CascadeScorer(fast=fast, judge=judge, threshold=threshold)
         case "faithfulness":
             from evals.scorers.faithfulness import FaithfulnessScorer
+
             return FaithfulnessScorer(
                 scale=args.scale,
                 **({"model": args.judge_model} if args.judge_model else {}),
             )
         case "context-sufficiency":
             from evals.scorers.context_sufficiency import ContextSufficiencyScorer
+
             return ContextSufficiencyScorer(
                 **({"model": args.judge_model} if args.judge_model else {})
             )

@@ -12,6 +12,7 @@ from evals.sensitivity_reporter import SensitivityReporter
 # helpers
 # ---------------------------------------------------------------------------
 
+
 def _sample(sid: str) -> Sample:
     return Sample(id=sid, input=f"q {sid}", expected=f"a {sid}", metadata={})
 
@@ -34,12 +35,13 @@ def _reporter(tmp_path) -> SensitivityReporter:
 # _compute_per_sample
 # ---------------------------------------------------------------------------
 
+
 class TestComputePerSample:
     def test_all_pass_gives_zero_variance(self, tmp_path):
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 1.0), _result("b", 1.0)],
+            "rephrase": [_result("a", 1.0), _result("b", 1.0)],
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase"])
         for row in rows:
@@ -50,7 +52,7 @@ class TestComputePerSample:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", 0.0)],
+            "rephrase": [_result("a", 0.0)],
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase"])
         assert rows[0]["variance"] == pytest.approx(statistics.variance([1.0, 0.0]))
@@ -60,8 +62,8 @@ class TestComputePerSample:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", None)],   # scorer failure
-            "formal":    [_result("a", 1.0)],
+            "rephrase": [_result("a", None)],  # scorer failure
+            "formal": [_result("a", 1.0)],
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase", "formal"])
         row = rows[0]
@@ -74,7 +76,7 @@ class TestComputePerSample:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", None)],
+            "rephrase": [_result("a", None)],
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase"])
         assert rows[0]["variance"] is None
@@ -84,23 +86,23 @@ class TestComputePerSample:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 0.5)],           # "b" not present
+            "rephrase": [_result("a", 0.5)],  # "b" not present
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase"])
         b_row = next(row for row in rows if row["id"] == "b")
         assert b_row["rephrase"] is None
-        assert b_row["verdict"] == "n/a"   # only one valid score
+        assert b_row["verdict"] == "n/a"  # only one valid score
 
     def test_baseline_always_first_column(self, tmp_path):
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", 1.0)],
+            "rephrase": [_result("a", 1.0)],
         }
         rows = r._compute_per_sample(rbv, ["baseline", "rephrase"])
         row = rows[0]
         keys = list(row.keys())
-        assert keys[1] == "baseline"    # id is first, baseline second
+        assert keys[1] == "baseline"  # id is first, baseline second
 
     def test_threshold_is_strict_greater_than(self, tmp_path):
         r = _reporter(tmp_path)
@@ -110,14 +112,14 @@ class TestComputePerSample:
         # the threshold should be "ok".
         rbv_ok = {
             "baseline": [_result("a", 0.9)],
-            "rephrase":  [_result("a", 0.95)],
+            "rephrase": [_result("a", 0.95)],
         }
         rows_ok = r._compute_per_sample(rbv_ok, ["baseline", "rephrase"])
         assert rows_ok[0]["verdict"] == "ok"
 
         rbv_unstable = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", 0.0)],
+            "rephrase": [_result("a", 0.0)],
         }
         rows_unstable = r._compute_per_sample(rbv_unstable, ["baseline", "rephrase"])
         assert rows_unstable[0]["verdict"] == "unstable"
@@ -133,12 +135,13 @@ class TestComputePerSample:
 # _compute_per_variation
 # ---------------------------------------------------------------------------
 
+
 class TestComputePerVariation:
     def test_baseline_delta_and_variance_are_null(self, tmp_path):
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 0.8), _result("b", 0.8)],
+            "rephrase": [_result("a", 0.8), _result("b", 0.8)],
         }
         variation_names = ["baseline", "rephrase"]
         per_sample = r._compute_per_sample(rbv, variation_names)
@@ -151,7 +154,7 @@ class TestComputePerVariation:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 0.8), _result("b", 0.8)],
+            "rephrase": [_result("a", 0.8), _result("b", 0.8)],
         }
         variation_names = ["baseline", "rephrase"]
         per_sample = r._compute_per_sample(rbv, variation_names)
@@ -173,7 +176,7 @@ class TestComputePerVariation:
         # Give rephrase a very different score to produce high variance
         rbv = {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 0.0), _result("b", 0.0)],
+            "rephrase": [_result("a", 0.0), _result("b", 0.0)],
         }
         variation_names = ["baseline", "rephrase"]
         per_sample = r._compute_per_sample(rbv, variation_names)
@@ -190,12 +193,13 @@ class TestComputePerVariation:
 # SensitivityReporter.report() — integration with tmp_path
 # ---------------------------------------------------------------------------
 
+
 class TestReport:
     def _make_rbv(self) -> dict[str, list[RunResult]]:
         return {
             "baseline": [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("a", 0.5), _result("b", 1.0)],
-            "formal":    [_result("a", 1.0), _result("b", 0.5)],
+            "rephrase": [_result("a", 0.5), _result("b", 1.0)],
+            "formal": [_result("a", 1.0), _result("b", 0.5)],
         }
 
     def test_creates_sensitivity_json(self, tmp_path):
@@ -246,9 +250,9 @@ class TestReport:
         #   add_noise covers "a" (variance=0.5 — unstable sample)
         # This produces different mean_variance per variation, identifying add_noise.
         rbv = {
-            "baseline":  [_result("a", 1.0), _result("b", 1.0)],
-            "rephrase":  [_result("b", 1.0)],   # stable sample → low mean_variance
-            "add_noise": [_result("a", 0.0)],   # unstable sample → high mean_variance
+            "baseline": [_result("a", 1.0), _result("b", 1.0)],
+            "rephrase": [_result("b", 1.0)],  # stable sample → low mean_variance
+            "add_noise": [_result("a", 0.0)],  # unstable sample → high mean_variance
         }
         _, sens_dir = r.report(rbv, "extraction", "schema")
         data = json.loads((sens_dir / "sensitivity.json").read_text())
@@ -263,8 +267,8 @@ class TestReport:
         r = _reporter(tmp_path)
         rbv = {
             "baseline": [_result("a", 1.0)],
-            "rephrase":  [_result("a", None)],
-            "formal":    [_result("a", 1.0)],
+            "rephrase": [_result("a", None)],
+            "formal": [_result("a", 1.0)],
         }
         output_str, _ = r.report(rbv, "extraction", "schema")
         assert "—" in output_str

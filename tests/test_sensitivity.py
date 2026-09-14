@@ -7,10 +7,11 @@ from evals.sensitivity_reporter import run_variations
 
 
 def _make_dataset(*ids: str) -> Dataset:
-    return Dataset(samples=[
-        Sample(id=i, input=f"input {i}", expected=f"expected {i}", metadata={})
-        for i in ids
-    ])
+    return Dataset(
+        samples=[
+            Sample(id=i, input=f"input {i}", expected=f"expected {i}", metadata={}) for i in ids
+        ]
+    )
 
 
 def _make_result(sample_id: str) -> RunResult:

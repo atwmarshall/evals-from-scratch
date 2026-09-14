@@ -136,7 +136,11 @@ class LLMJudgeScorer:
                     format_status = "repaired"
                     logger.warning("judge response repaired (truncated): %s…", raw[:80])
                 except json.JSONDecodeError:
-                    return None, f"judge response not valid JSON even after repair: {raw!r}", "repair_failed"
+                    return (
+                        None,
+                        f"judge response not valid JSON even after repair: {raw!r}",
+                        "repair_failed",
+                    )
             else:
                 return None, f"judge response not valid JSON: {raw!r}", "repair_failed"
 
