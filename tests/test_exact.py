@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from evals.core import ScorerContext
 from evals.scorers.exact import exact_match, normalised_match
 

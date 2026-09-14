@@ -4,10 +4,19 @@ import logging
 import os
 import time
 from collections.abc import Iterable
+from typing import cast
 
 import ollama
 
-from evals.core import AnyScorer, DatasetScorer, EvalConfig, RunResult, Sample, ScorerContext
+from evals.core import (
+    AnyScorer,
+    DatasetScorer,
+    EvalConfig,
+    RunResult,
+    Sample,
+    ScorerCallable,
+    ScorerContext,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +76,9 @@ class Runner:
                             },
                         )
                         latency_ms = int((time.monotonic() - t0) * 1000)
-                        completion = response.message.content
+                        completion = response.message.content or ""
                         ctx.metadata_out = {}
-                        score = scorer(completion, sample.expected, ctx)
+                        score = cast(ScorerCallable, scorer)(completion, sample.expected, ctx)
                         if score is None and last_error is None:
                             error = "scorer returned None — see judge traces for details"
                         logger.info("sample=%s score=%s", sample.id, score)

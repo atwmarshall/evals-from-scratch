@@ -10,15 +10,15 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-from evals.core import EvalConfig, RunResult, ScorerCallable
+from evals.core import AnyScorer, Dataset, EvalConfig, RunResult
 from evals.runner import Runner
 
 logger = logging.getLogger(__name__)
 
 
 def run_variations(
-    variations: dict[str, list],  # dict[str, Dataset]
-    scorer: ScorerCallable,
+    variations: dict[str, Dataset],
+    scorer: AnyScorer,
     config: EvalConfig,
 ) -> dict[str, list[RunResult]]:
     """Run each variation dataset through Runner and return results keyed by variation name.

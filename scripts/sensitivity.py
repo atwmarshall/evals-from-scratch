@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """sensitivity.py — measure scorer stability across semantically equivalent input variations.
 
 Flow:
@@ -9,6 +7,8 @@ Flow:
 Part A of Challenge 6: scorer reliability. Hold input + model fixed, vary the
 scorer prompt. Question: "can I trust my ruler?"
 """
+
+from __future__ import annotations
 
 import argparse
 import json

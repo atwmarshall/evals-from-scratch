@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from evals.core import AnyScorer
 from pathlib import Path
 
+from evals.core import AnyScorer
 from evals.scorers.cascade import CascadeScorer
 from evals.scorers.exact import exact_match, normalised_match
 from evals.scorers.llm_judge import LLMJudgeScorer
@@ -71,9 +71,9 @@ def build_scorer(
             )
             # sensitivity.py uses --cascade-threshold to avoid confusion with
             # --validation-threshold; other CLIs use --threshold. Support both.
-            threshold = getattr(args, "cascade_threshold", None)
+            threshold: float | None = getattr(args, "cascade_threshold", None)
             if threshold is None:
-                threshold = getattr(args, "threshold", 1.0)
+                threshold = float(getattr(args, "threshold", 1.0))
             return CascadeScorer(fast=fast, judge=judge, threshold=threshold)
         case "faithfulness":
             from evals.scorers.faithfulness import FaithfulnessScorer

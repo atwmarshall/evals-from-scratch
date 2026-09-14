@@ -11,8 +11,7 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-from evals.core import EvalConfig, RunResult, ScorerCallable
-from evals.runner import Runner
+from evals.core import RunResult
 
 logger = logging.getLogger(__name__)
 

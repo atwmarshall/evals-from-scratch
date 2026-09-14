@@ -8,7 +8,6 @@ from evals.core import RunResult, Sample, ScorerContext
 from evals.reporters import Reporter
 from evals.scorers.schema import JSONSchemaScorer
 
-
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
