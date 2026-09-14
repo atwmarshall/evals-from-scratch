@@ -51,6 +51,10 @@ select = [
 # (results/YYYY-MM-DD/HHMMSS) because they are read by a human on this machine.
 ignore = ["E501"]
 
+[tool.ruff.format]
+# Leave the code snippets in the docs as written.
+exclude = ["*.md"]
+
 [tool.mypy]
 python_version = "3.11"
 files = ["evals", "scripts", "runners"]
