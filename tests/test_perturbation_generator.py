@@ -4,6 +4,7 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+
 from evals.core import Dataset, Sample
 from evals.perturbation_generator import PerturbationGenerator
 

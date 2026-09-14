@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 import pytest
+
 from evals.core import RunResult, Sample, ScorerContext
 from evals.reporters import Reporter
 from evals.scorers.schema import JSONSchemaScorer
