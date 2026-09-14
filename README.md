@@ -31,6 +31,9 @@ Written from scratch rather than on top of an existing harness, because the fail
 [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md) for the ones this turned up, and
 [docs/OPEN_PROBLEMS.md](docs/OPEN_PROBLEMS.md) for what is still unsolved.
 
+Developed with Claude Code as a coding assistant. [AGENTS.md](AGENTS.md) sets the rules it
+works under, and each pull request says which model was involved.
+
 ---
 
 ## Project structure

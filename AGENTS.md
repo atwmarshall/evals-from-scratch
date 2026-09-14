@@ -23,9 +23,10 @@ should be argued for in an issue before any code is written.
    ```
    uv run pytest -q
    uv run ruff check .
+   uv run ruff format --check .
    uv run mypy
    ```
-   All three must pass. If you cannot make one pass, say so in the PR
+   All four must pass. If you cannot make one pass, say so in the PR
    description rather than weakening the check.
 5. **Disclose agent involvement** in the PR description: which model and tool
    wrote the change, and whether a separate review pass ran over it.
