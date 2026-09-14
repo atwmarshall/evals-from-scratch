@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 VARIATION_PROMPTS: dict[str, str] = {
     "synonym_swap": "Rewrite this question replacing key verbs and nouns with synonyms. Keep the exact meaning.",
-    "rephrase":     "Rephrase this question completely differently. Same meaning, different sentence structure.",
-    "add_noise":    "Add one irrelevant sentence to this question. The added sentence should be unrelated to the task.",
-    "formal":       "Rewrite this question in a more formal register.",
-    "concise":      "Rewrite this question more concisely. Remove all unnecessary words.",
+    "rephrase": "Rephrase this question completely differently. Same meaning, different sentence structure.",
+    "add_noise": "Add one irrelevant sentence to this question. The added sentence should be unrelated to the task.",
+    "formal": "Rewrite this question in a more formal register.",
+    "concise": "Rewrite this question more concisely. Remove all unnecessary words.",
 }
 
 _VARIATION_PROMPT = """\
@@ -46,7 +46,11 @@ class VariationGenerator:
     """
 
     def __init__(self, model: str | None = None) -> None:
-        self.model = model or os.environ.get("VARIATION_MODEL") or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+        self.model = (
+            model
+            or os.environ.get("VARIATION_MODEL")
+            or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+        )
         host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         self._client = ollama.Client(host=host)
 
@@ -70,7 +74,9 @@ class VariationGenerator:
 
         unknown = [v for v in variations if v not in VARIATION_PROMPTS]
         if unknown:
-            raise ValueError(f"unknown variation types: {unknown!r}. Valid: {list(VARIATION_PROMPTS)}")
+            raise ValueError(
+                f"unknown variation types: {unknown!r}. Valid: {list(VARIATION_PROMPTS)}"
+            )
 
         result: dict[str, Dataset] = {"baseline": dataset}
 
@@ -83,15 +89,19 @@ class VariationGenerator:
                 except Exception as e:
                     logger.warning(
                         "variation failed for sample %s (%s): %s",
-                        sample.id, variation_name, e,
+                        sample.id,
+                        variation_name,
+                        e,
                     )
                     varied_input = sample.input
-                varied_samples.append(Sample(
-                    id=sample.id,
-                    input=varied_input,
-                    expected=sample.expected,
-                    metadata=sample.metadata,
-                ))
+                varied_samples.append(
+                    Sample(
+                        id=sample.id,
+                        input=varied_input,
+                        expected=sample.expected,
+                        metadata=sample.metadata,
+                    )
+                )
             result[variation_name] = Dataset(samples=varied_samples)
 
         return result
@@ -144,46 +154,59 @@ class VariationGenerator:
                 except Exception as exc:
                     logger.warning(
                         "validate_variations: scorer raised for sample %s variation %r: %s — discarding",
-                        varied_sample.id, variation_name, exc,
+                        varied_sample.id,
+                        variation_name,
+                        exc,
                     )
-                    discards.append({
-                        "id": varied_sample.id,
-                        "variation": variation_name,
-                        "varied_input": varied_sample.input,
-                        "expected": varied_sample.expected,
-                        "validity_score": None,
-                        "reason": "scorer_exception",
-                    })
+                    discards.append(
+                        {
+                            "id": varied_sample.id,
+                            "variation": variation_name,
+                            "varied_input": varied_sample.input,
+                            "expected": varied_sample.expected,
+                            "validity_score": None,
+                            "reason": "scorer_exception",
+                        }
+                    )
                     continue
 
                 if score is None:
                     logger.warning(
                         "validate_variations: discarded sample %s from variation %r — scorer_returned_none (threshold=%.3f)",
-                        varied_sample.id, variation_name, threshold,
+                        varied_sample.id,
+                        variation_name,
+                        threshold,
                     )
-                    discards.append({
-                        "id": varied_sample.id,
-                        "variation": variation_name,
-                        "varied_input": varied_sample.input,
-                        "expected": varied_sample.expected,
-                        "validity_score": None,
-                        "reason": "scorer_returned_none",
-                    })
+                    discards.append(
+                        {
+                            "id": varied_sample.id,
+                            "variation": variation_name,
+                            "varied_input": varied_sample.input,
+                            "expected": varied_sample.expected,
+                            "validity_score": None,
+                            "reason": "scorer_returned_none",
+                        }
+                    )
                     continue
 
                 if score < threshold:
                     logger.warning(
                         "validate_variations: discarded sample %s from variation %r — score_below_threshold (score=%.3f, threshold=%.3f)",
-                        varied_sample.id, variation_name, score, threshold,
+                        varied_sample.id,
+                        variation_name,
+                        score,
+                        threshold,
                     )
-                    discards.append({
-                        "id": varied_sample.id,
-                        "variation": variation_name,
-                        "varied_input": varied_sample.input,
-                        "expected": varied_sample.expected,
-                        "validity_score": score,
-                        "reason": "score_below_threshold",
-                    })
+                    discards.append(
+                        {
+                            "id": varied_sample.id,
+                            "variation": variation_name,
+                            "varied_input": varied_sample.input,
+                            "expected": varied_sample.expected,
+                            "validity_score": score,
+                            "reason": "score_below_threshold",
+                        }
+                    )
                     continue
 
                 valid_samples.append(varied_sample)
@@ -232,7 +255,12 @@ class VariationGenerator:
             date = datetime.now().strftime("%Y-%m-%d")
             source_stem = Path(source_path).stem
             model_slug = re.sub(r"[:/]", "_", self.model)
-            output_dir = Path("datasets") / "generated" / "sensitivity" / f"{date}_{source_stem}_{model_slug}"
+            output_dir = (
+                Path("datasets")
+                / "generated"
+                / "sensitivity"
+                / f"{date}_{source_stem}_{model_slug}"
+            )
         else:
             output_dir = Path(output_dir)
 
@@ -247,12 +275,17 @@ class VariationGenerator:
             jsonl_path = output_dir / f"{name}.jsonl"
             with jsonl_path.open("w") as f:
                 for sample in ds:
-                    f.write(json.dumps({
-                        "id": sample.id,
-                        "input": sample.input,
-                        "expected": sample.expected,
-                        "metadata": sample.metadata,
-                    }) + "\n")
+                    f.write(
+                        json.dumps(
+                            {
+                                "id": sample.id,
+                                "input": sample.input,
+                                "expected": sample.expected,
+                                "metadata": sample.metadata,
+                            }
+                        )
+                        + "\n"
+                    )
             logger.info("saved %d samples to %s", len(ds), jsonl_path)
 
         if discards:
@@ -298,9 +331,7 @@ class VariationGenerator:
         if not directory.exists():
             raise FileNotFoundError(f"variation directory not found: {directory}")
 
-        jsonl_files = sorted(
-            p for p in directory.glob("*.jsonl") if p.stem != "discarded"
-        )
+        jsonl_files = sorted(p for p in directory.glob("*.jsonl") if p.stem != "discarded")
         if not jsonl_files:
             raise ValueError(f"no JSONL files found in {directory}")
 

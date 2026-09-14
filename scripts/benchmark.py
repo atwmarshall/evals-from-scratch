@@ -44,16 +44,40 @@ def main() -> None:
     parser.add_argument("--dataset", required=True, help="Path to JSONL dataset")
     parser.add_argument("--scorer", required=True, help=f"Scorer name ({SCORER_CHOICES})")
     parser.add_argument("--limit", type=int, default=None, help="Max samples to run")
-    parser.add_argument("--output", default=None, help="Results directory (overrides RESULTS_DIR env var)")
+    parser.add_argument(
+        "--output", default=None, help="Results directory (overrides RESULTS_DIR env var)"
+    )
     # Scorer-specific args
-    parser.add_argument("--pattern", default=None, help="Regex pattern(s) for regex/multi-regex scorers")
+    parser.add_argument(
+        "--pattern", default=None, help="Regex pattern(s) for regex/multi-regex scorers"
+    )
     parser.add_argument("--schema", default=None, help="Path to JSON schema file for schema scorer")
-    parser.add_argument("--scale", type=int, default=5, help="Score scale for judge scorer (default: 5)")
-    parser.add_argument("--judge-model", default=None, help="Model ID for judge (overrides JUDGE_MODEL env var)")
-    parser.add_argument("--fast-tier", default="normalised", choices=["exact", "normalised"], help="Fast tier for cascade scorer")
-    parser.add_argument("--threshold", type=float, default=1.0, help="Fast-tier threshold for cascade scorer (default: 1.0)")
-    parser.add_argument("--models", default=None, help="Comma-separated list of model IDs (skips interactive selection)")
-    parser.add_argument("--timeout", type=int, default=120, help="Per-sample timeout in seconds (default: 120)")
+    parser.add_argument(
+        "--scale", type=int, default=5, help="Score scale for judge scorer (default: 5)"
+    )
+    parser.add_argument(
+        "--judge-model", default=None, help="Model ID for judge (overrides JUDGE_MODEL env var)"
+    )
+    parser.add_argument(
+        "--fast-tier",
+        default="normalised",
+        choices=["exact", "normalised"],
+        help="Fast tier for cascade scorer",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=1.0,
+        help="Fast-tier threshold for cascade scorer (default: 1.0)",
+    )
+    parser.add_argument(
+        "--models",
+        default=None,
+        help="Comma-separated list of model IDs (skips interactive selection)",
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=120, help="Per-sample timeout in seconds (default: 120)"
+    )
     args = parser.parse_args()
 
     if args.models:
@@ -85,7 +109,9 @@ def main() -> None:
     dataset_name = Path(args.dataset).stem
     scorer_name = args.scorer
 
-    print(f"\nRunning {scorer_name} on {dataset_name} ({len(ds)} samples) across {len(selected)} model(s)...\n")
+    print(
+        f"\nRunning {scorer_name} on {dataset_name} ({len(ds)} samples) across {len(selected)} model(s)...\n"
+    )
 
     all_model_results = []
     for model_id in selected:

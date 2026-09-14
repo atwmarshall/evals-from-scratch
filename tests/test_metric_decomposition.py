@@ -39,6 +39,7 @@ _SIMPLE_SCHEMA = {
 # _summarise — format_status rates
 # ---------------------------------------------------------------------------
 
+
 class TestSummariseFormatRates:
     def test_all_clean(self):
         results = [_make_result({"format_status": "clean"}) for _ in range(4)]
@@ -73,13 +74,16 @@ class TestSummariseFormatRates:
             _make_result({"format_status": "repair_failed"}),
         ]
         s = _reporter._summarise(results)
-        total = s["clean_rate"] + (s["format_pass_rate"] - s["clean_rate"]) + s["repair_failure_rate"]
+        total = (
+            s["clean_rate"] + (s["format_pass_rate"] - s["clean_rate"]) + s["repair_failure_rate"]
+        )
         assert total == pytest.approx(1.0)
 
 
 # ---------------------------------------------------------------------------
 # _summarise — judge_rate from tier_used
 # ---------------------------------------------------------------------------
+
 
 class TestSummariseJudgeRate:
     def test_judge_rate_all_judge(self):
@@ -105,6 +109,7 @@ class TestSummariseJudgeRate:
 # ---------------------------------------------------------------------------
 # JSONSchemaScorer — writes format_status to ctx.metadata_out
 # ---------------------------------------------------------------------------
+
 
 class TestSchemaFormatStatus:
     def _ctx(self) -> ScorerContext:
@@ -141,6 +146,7 @@ class TestSchemaFormatStatus:
 # report() — summary string conditional display (Gap C)
 # ---------------------------------------------------------------------------
 
+
 class TestReportSummaryString:
     def test_format_metrics_appear_when_format_status_present(self, tmp_path):
         r = Reporter(results_dir=tmp_path)
@@ -167,6 +173,7 @@ class TestReportSummaryString:
 # samples.jsonl — scorer_metadata field (Gap D)
 # ---------------------------------------------------------------------------
 
+
 class TestSamplesJsonlMetadata:
     def test_scorer_metadata_key_present(self, tmp_path):
         r = Reporter(results_dir=tmp_path)
@@ -186,6 +193,7 @@ class TestSamplesJsonlMetadata:
 # ---------------------------------------------------------------------------
 # run.json — summary contains new fields (Gap E)
 # ---------------------------------------------------------------------------
+
 
 class TestRunJsonSummaryFields:
     def test_format_fields_present_when_format_status_in_results(self, tmp_path):

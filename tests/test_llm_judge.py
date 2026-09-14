@@ -13,6 +13,7 @@ from evals.core import ScorerContext
 @pytest.fixture
 def judge(tmp_path):
     from evals.scorers.llm_judge import LLMJudgeScorer
+
     return LLMJudgeScorer(scale=5, results_dir=tmp_path)
 
 
@@ -153,6 +154,9 @@ class TestCallJudgeFormatStatus:
 class TestFixtureIsolation:
     def test_no_directory_created_on_construction(self, tmp_path):
         from evals.scorers.llm_judge import LLMJudgeScorer
+
         judge = LLMJudgeScorer(results_dir=tmp_path)
         trace_dir = judge._trace_dir
-        assert not trace_dir.exists(), "trace dir should not be created until _write_trace is called"
+        assert not trace_dir.exists(), (
+            "trace dir should not be created until _write_trace is called"
+        )

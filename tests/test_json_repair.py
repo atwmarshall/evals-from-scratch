@@ -10,7 +10,10 @@ def test_missing_closing_brace():
 
 
 def test_truncated_string_value():
-    assert _repair_truncated_json('{"score": 3, "reasoning": "tru') == '{"score": 3, "reasoning": "tru"}'
+    assert (
+        _repair_truncated_json('{"score": 3, "reasoning": "tru')
+        == '{"score": 3, "reasoning": "tru"}'
+    )
 
 
 def test_missing_closing_bracket():

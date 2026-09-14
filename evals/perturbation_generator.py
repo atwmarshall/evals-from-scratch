@@ -14,10 +14,10 @@ from evals.core import Dataset, Sample
 logger = logging.getLogger(__name__)
 
 PERTURBATION_PROMPTS: dict[str, str] = {
-    "typos":        "Introduce 2-3 realistic typos into this text as a human might make.",
-    "colloquial":   "Rewrite this in casual conversational language.",
-    "verbose":      "Add redundant words and padding while keeping the same question.",
-    "indirect":     "Rephrase this as an indirect or implicit question.",
+    "typos": "Introduce 2-3 realistic typos into this text as a human might make.",
+    "colloquial": "Rewrite this in casual conversational language.",
+    "verbose": "Add redundant words and padding while keeping the same question.",
+    "indirect": "Rephrase this as an indirect or implicit question.",
     "multilingual": "Translate key terms into another language but keep the structure.",
 }
 
@@ -48,7 +48,11 @@ class PerturbationGenerator:
     """
 
     def __init__(self, model: str | None = None) -> None:
-        self.model = model or os.environ.get("PERTURBATION_MODEL") or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+        self.model = (
+            model
+            or os.environ.get("PERTURBATION_MODEL")
+            or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+        )
         host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         self._client = ollama.Client(host=host)
 
@@ -74,7 +78,9 @@ class PerturbationGenerator:
 
         unknown = [p for p in perturbations if p not in PERTURBATION_PROMPTS]
         if unknown:
-            raise ValueError(f"unknown perturbation types: {unknown!r}. Valid: {list(PERTURBATION_PROMPTS)}")
+            raise ValueError(
+                f"unknown perturbation types: {unknown!r}. Valid: {list(PERTURBATION_PROMPTS)}"
+            )
 
         result: dict[str, Dataset] = {"baseline": dataset}
 
@@ -87,15 +93,19 @@ class PerturbationGenerator:
                 except Exception as e:
                     logger.warning(
                         "perturbation failed for sample %s (%s): %s — excluding from this perturbation",
-                        sample.id, perturbation_name, e,
+                        sample.id,
+                        perturbation_name,
+                        e,
                     )
                     continue  # exclude, don't fall back — a missing score is honest
-                perturbed_samples.append(Sample(
-                    id=sample.id,
-                    input=perturbed_input,
-                    expected=sample.expected,
-                    metadata=sample.metadata,
-                ))
+                perturbed_samples.append(
+                    Sample(
+                        id=sample.id,
+                        input=perturbed_input,
+                        expected=sample.expected,
+                        metadata=sample.metadata,
+                    )
+                )
             result[perturbation_name] = Dataset(samples=perturbed_samples)
 
         return result
@@ -124,7 +134,9 @@ class PerturbationGenerator:
             date = datetime.now().strftime("%Y-%m-%d")
             source_stem = Path(source_path).stem
             model_slug = re.sub(r"[:/]", "_", self.model)
-            output_dir = Path("datasets") / "generated" / "robustness" / f"{date}_{source_stem}_{model_slug}"
+            output_dir = (
+                Path("datasets") / "generated" / "robustness" / f"{date}_{source_stem}_{model_slug}"
+            )
         else:
             output_dir = Path(output_dir)
 
@@ -136,12 +148,17 @@ class PerturbationGenerator:
             jsonl_path = output_dir / f"{name}.jsonl"
             with jsonl_path.open("w") as f:
                 for sample in ds:
-                    f.write(json.dumps({
-                        "id": sample.id,
-                        "input": sample.input,
-                        "expected": sample.expected,
-                        "metadata": sample.metadata,
-                    }) + "\n")
+                    f.write(
+                        json.dumps(
+                            {
+                                "id": sample.id,
+                                "input": sample.input,
+                                "expected": sample.expected,
+                                "metadata": sample.metadata,
+                            }
+                        )
+                        + "\n"
+                    )
             logger.info("saved %d samples to %s", len(ds), jsonl_path)
 
         metadata = {

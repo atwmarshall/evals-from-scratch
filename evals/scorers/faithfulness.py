@@ -92,7 +92,11 @@ class FaithfulnessScorer:
                     obj = json.loads(repaired)
                     format_status = "repaired"
                 except json.JSONDecodeError:
-                    return None, f"faithfulness response not valid JSON even after repair: {raw!r}", "repair_failed"
+                    return (
+                        None,
+                        f"faithfulness response not valid JSON even after repair: {raw!r}",
+                        "repair_failed",
+                    )
             else:
                 return None, f"faithfulness response not valid JSON: {raw!r}", "repair_failed"
 
@@ -108,7 +112,6 @@ class FaithfulnessScorer:
             return None, f"faithfulness score {score} out of range 1–{self.scale}", format_status
 
         return score, None, format_status
-
 
 
 def _strip_fences(raw: str) -> str:

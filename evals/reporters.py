@@ -19,13 +19,17 @@ def _sanitise_model(model: str) -> str:
 
 @dataclass
 class Reporter:
-    results_dir: Path = field(default_factory=lambda: Path(os.environ.get("RESULTS_DIR", "results")))
+    results_dir: Path = field(
+        default_factory=lambda: Path(os.environ.get("RESULTS_DIR", "results"))
+    )
 
     def _summarise(self, results: list[RunResult]) -> dict[str, Any]:
         latencies = [r.latency_ms for r in results]
         scores = [r.score for r in results if r.score is not None]
         api_errors = sum(1 for r in results if r.error and r.score is None and r.completion is None)
-        parse_failures = sum(1 for r in results if r.error and r.score is None and r.completion is not None)
+        parse_failures = sum(
+            1 for r in results if r.error and r.score is None and r.completion is not None
+        )
         n = len(results)
         mean_score = statistics.mean(scores) if scores else None
         p50_latency = int(statistics.median(latencies)) if latencies else 0
@@ -79,7 +83,7 @@ class Reporter:
         scorer_name: str,
         model: str = "unknown",
     ) -> tuple[str, Path]:
-        has_tier   = any("tier_used"     in r.metadata for r in results)
+        has_tier = any("tier_used" in r.metadata for r in results)
         has_format = any("format_status" in r.metadata for r in results)
 
         rows = []
@@ -149,7 +153,10 @@ class Reporter:
         time_str = now.strftime("%H%M%S")
         safe_model = _sanitise_model(model)
         run_dir = (
-            self.results_dir / "runs" / date / f"{time_str}_{safe_model}_{dataset_name}_{scorer_name}"
+            self.results_dir
+            / "runs"
+            / date
+            / f"{time_str}_{safe_model}_{dataset_name}_{scorer_name}"
         )
         run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -208,13 +215,15 @@ class Reporter:
             if s["p95_low_confidence"]:
                 p95_str += f" (n={s['n']} ⚠)"
 
-            table_rows.append([
-                model_id,
-                mean_score_str,
-                f"{s['p50_latency_ms']}ms",
-                p95_str,
-                f"{s['error_rate']:.1%}",
-            ])
+            table_rows.append(
+                [
+                    model_id,
+                    mean_score_str,
+                    f"{s['p50_latency_ms']}ms",
+                    p95_str,
+                    f"{s['error_rate']:.1%}",
+                ]
+            )
 
             safe_model = _sanitise_model(model_id)
             with (bench_dir / f"{safe_model}.jsonl").open("w") as f:
@@ -250,8 +259,14 @@ class Reporter:
                 row = list(base_row)
                 if has_format:
                     row.append(f"{s['clean_rate']:.1%}" if s["clean_rate"] is not None else "—")
-                    row.append(f"{s['format_pass_rate']:.1%}" if s["format_pass_rate"] is not None else "—")
-                    row.append(f"{s['repair_failure_rate']:.1%}" if s["repair_failure_rate"] is not None else "—")
+                    row.append(
+                        f"{s['format_pass_rate']:.1%}" if s["format_pass_rate"] is not None else "—"
+                    )
+                    row.append(
+                        f"{s['repair_failure_rate']:.1%}"
+                        if s["repair_failure_rate"] is not None
+                        else "—"
+                    )
                 if has_judge:
                     row.append(f"{s['judge_rate']:.1%}" if s["judge_rate"] is not None else "—")
                 extended_rows.append(row)

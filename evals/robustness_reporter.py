@@ -71,7 +71,9 @@ class RobustnessReporter:
         perturbation_names = list(results_by_perturbation.keys())
 
         per_sample = self._compute_per_sample(results_by_perturbation, perturbation_names)
-        per_perturbation = self._compute_per_perturbation(results_by_perturbation, per_sample, perturbation_names)
+        per_perturbation = self._compute_per_perturbation(
+            results_by_perturbation, per_sample, perturbation_names
+        )
 
         n_robust = sum(1 for r in per_sample if r["verdict"] == "robust")
         n_fragile = sum(1 for r in per_sample if r["verdict"] == "fragile")
@@ -81,18 +83,19 @@ class RobustnessReporter:
         n_degraded = n_fragile + n_brittle
 
         non_baseline = [
-            r for r in per_perturbation
+            r
+            for r in per_perturbation
             if r["perturbation"] != "baseline" and r["delta_from_baseline"] is not None
         ]
         most_degrading = (
             min(non_baseline, key=lambda r: r["delta_from_baseline"])["perturbation"]
-            if non_baseline else None
+            if non_baseline
+            else None
         )
 
         baseline_n = len(results_by_perturbation.get("baseline", []))
         most_degrading_n = (
-            len(results_by_perturbation.get(most_degrading, []))
-            if most_degrading else None
+            len(results_by_perturbation.get(most_degrading, [])) if most_degrading else None
         )
 
         # Per-sample table
@@ -112,11 +115,15 @@ class RobustnessReporter:
         pv_headers = ["perturbation", "mean_score", "delta_from_baseline"]
         pv_rows = []
         for row in per_perturbation:
-            pv_rows.append([
-                row["perturbation"],
-                f"{row['mean_score']:.3f}" if row["mean_score"] is not None else "—",
-                f"{row['delta_from_baseline']:+.3f}" if row["delta_from_baseline"] is not None else "—",
-            ])
+            pv_rows.append(
+                [
+                    row["perturbation"],
+                    f"{row['mean_score']:.3f}" if row["mean_score"] is not None else "—",
+                    f"{row['delta_from_baseline']:+.3f}"
+                    if row["delta_from_baseline"] is not None
+                    else "—",
+                ]
+            )
         pv_table = tabulate(pv_rows, headers=pv_headers, tablefmt="simple")
 
         summary_line = f"{n_degraded} degraded / {n_total} samples"
@@ -137,24 +144,26 @@ class RobustnessReporter:
         date = now.strftime("%Y-%m-%d")
         time_str = now.strftime("%H%M%S")
         model_slug = re.sub(r"[:/]", "_", model)
-        rob_dir = (
-            self.results_dir / "robustness" / date
-            / f"{time_str}_{dataset_name}_{model_slug}"
-        )
+        rob_dir = self.results_dir / "robustness" / date / f"{time_str}_{dataset_name}_{model_slug}"
         rob_dir.mkdir(parents=True, exist_ok=True)
 
         for name, results in results_by_perturbation.items():
             with (rob_dir / f"{name}.jsonl").open("w") as f:
                 for r in results:
-                    f.write(json.dumps({
-                        "id": r.sample.id,
-                        "expected": r.sample.expected,
-                        "score": r.score,
-                        "latency_ms": r.latency_ms,
-                        "completion": r.completion,
-                        "error": r.error,
-                        "scorer_metadata": r.metadata,
-                    }) + "\n")
+                    f.write(
+                        json.dumps(
+                            {
+                                "id": r.sample.id,
+                                "expected": r.sample.expected,
+                                "score": r.score,
+                                "latency_ms": r.latency_ms,
+                                "completion": r.completion,
+                                "error": r.error,
+                                "scorer_metadata": r.metadata,
+                            }
+                        )
+                        + "\n"
+                    )
 
         payload = {
             "dataset": dataset_name,
@@ -217,7 +226,8 @@ class RobustnessReporter:
 
             baseline_score = row.get("baseline")
             perturbation_scores = [
-                row[name] for name in perturbation_names
+                row[name]
+                for name in perturbation_names
                 if name != "baseline" and row.get(name) is not None
             ]
 
@@ -226,11 +236,11 @@ class RobustnessReporter:
                 verdict = "n/a"
             else:
                 degradation = baseline_score - statistics.mean(perturbation_scores)
-                if degradation < 0.1:    # strictly less than 0.1
+                if degradation < 0.1:  # strictly less than 0.1
                     verdict = "robust"
                 elif degradation < 0.3:  # 0.1 <= degradation < 0.3
                     verdict = "fragile"
-                else:                    # 0.3 and above
+                else:  # 0.3 and above
                     verdict = "brittle"
 
             row["degradation"] = degradation
@@ -249,8 +259,7 @@ class RobustnessReporter:
         baseline_mean: float | None = None
         if "baseline" in perturbation_names:
             baseline_scores = [
-                row["baseline"] for row in per_sample_rows
-                if row.get("baseline") is not None
+                row["baseline"] for row in per_sample_rows if row.get("baseline") is not None
             ]
             baseline_mean = statistics.mean(baseline_scores) if baseline_scores else None
 
@@ -270,10 +279,12 @@ class RobustnessReporter:
                     else None
                 )
 
-            summary_rows.append({
-                "perturbation": name,
-                "mean_score": mean_score,
-                "delta_from_baseline": delta,
-            })
+            summary_rows.append(
+                {
+                    "perturbation": name,
+                    "mean_score": mean_score,
+                    "delta_from_baseline": delta,
+                }
+            )
 
         return summary_rows

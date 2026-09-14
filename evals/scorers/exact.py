@@ -24,8 +24,9 @@ def normalised_match(completion: str, expected: str, ctx: ScorerContext) -> floa
     normalise identically. Underscores are preserved (they are word characters).
     `ctx` is unused.
     """
+
     def normalise(s: str) -> str:
-        s = re.sub(r'[^\w\s]', '', s).lower()
-        return ' '.join(s.split())
+        s = re.sub(r"[^\w\s]", "", s).lower()
+        return " ".join(s.split())
 
     return 1.0 if normalise(completion) == normalise(expected) else 0.0

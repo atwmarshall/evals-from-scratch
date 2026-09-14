@@ -34,12 +34,14 @@ class Dataset:
                 for key in obj:
                     if key not in {"id", "input", "expected", "metadata"}:
                         metadata[key] = obj[key]
-                samples.append(Sample(
-                    id=obj["id"],
-                    input=obj["input"],
-                    expected=obj["expected"],
-                    metadata=metadata,
-                ))
+                samples.append(
+                    Sample(
+                        id=obj["id"],
+                        input=obj["input"],
+                        expected=obj["expected"],
+                        metadata=metadata,
+                    )
+                )
         if limit is not None:
             samples = samples[:limit]
         return cls(samples=samples)
@@ -92,6 +94,7 @@ class DatasetScorer:
     sufficiency is low for a sample, remove it — a bad sample produces
     misleading model scores regardless of scorer quality.
     """
+
     pass
 
 

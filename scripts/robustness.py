@@ -36,6 +36,7 @@ def main() -> None:
     load_dotenv()
 
     import argparse
+
     parser = argparse.ArgumentParser(
         description="Robustness analysis: measure model score degradation under adversarial input perturbations"
     )
@@ -44,37 +45,48 @@ def main() -> None:
     parser.add_argument("--model", default=None, help="Model to evaluate (overrides DEFAULT_MODEL)")
     parser.add_argument("--limit", type=int, default=None, help="Max samples")
     parser.add_argument(
-        "--perturbations", nargs="+", default=None,
+        "--perturbations",
+        nargs="+",
+        default=None,
         help="Perturbation types to run (default: all 5 — typos colloquial verbose indirect multilingual)",
     )
     parser.add_argument(
-        "--no-save-perturbations", action="store_true",
+        "--no-save-perturbations",
+        action="store_true",
         help="Skip saving generated perturbations to datasets/generated/robustness/",
     )
     parser.add_argument(
-        "--reuse-perturbations", default=None, metavar="DIR",
+        "--reuse-perturbations",
+        default=None,
+        metavar="DIR",
         help="Reuse previously saved perturbations from this directory",
     )
     parser.add_argument("--output", default=None, help="Results directory (overrides RESULTS_DIR)")
     # Scorer-specific flags
-    parser.add_argument("--pattern", default=None, help="Regex pattern for regex/multi-regex scorers")
+    parser.add_argument(
+        "--pattern", default=None, help="Regex pattern for regex/multi-regex scorers"
+    )
     parser.add_argument("--schema", default=None, help="Path to JSON schema file for schema scorer")
     parser.add_argument("--scale", type=int, default=5, help="Judge score scale (default: 5)")
     parser.add_argument("--judge-model", default=None, help="Model for LLM judge scorer")
     parser.add_argument(
-        "--fast-tier", default="normalised", choices=["exact", "normalised"],
+        "--fast-tier",
+        default="normalised",
+        choices=["exact", "normalised"],
         help="Fast tier for cascade scorer (default: normalised)",
     )
     parser.add_argument(
-        "--cascade-threshold", type=float, default=1.0,
+        "--cascade-threshold",
+        type=float,
+        default=1.0,
         help="Fast-tier threshold for cascade scorer (default: 1.0)",
     )
     args = parser.parse_args()
 
     # --- resolve models ---
     config = EvalConfig(model=args.model) if args.model else EvalConfig()
-    perturbation_model = (
-        os.environ.get("PERTURBATION_MODEL") or os.environ.get("DEFAULT_MODEL", "llama3.2:3b")
+    perturbation_model = os.environ.get("PERTURBATION_MODEL") or os.environ.get(
+        "DEFAULT_MODEL", "llama3.2:3b"
     )
 
     # No model separation check — for robustness testing the perturbation model
@@ -115,7 +127,9 @@ def main() -> None:
 
     # --- run each perturbation through the model ---
     n_perturbations = len([k for k in perturbations if k != "baseline"])
-    print(f"Running {len(perturbations)} perturbation(s) ({n_perturbations} + baseline) through {config.model}...")
+    print(
+        f"Running {len(perturbations)} perturbation(s) ({n_perturbations} + baseline) through {config.model}..."
+    )
 
     results_by_perturbation: dict[str, list[RunResult]] = {}
     for name, dataset in perturbations.items():

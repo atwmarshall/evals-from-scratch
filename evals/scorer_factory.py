@@ -78,12 +78,14 @@ def build_scorer(
             return CascadeScorer(fast=fast, judge=judge, threshold=threshold)
         case "faithfulness":
             from evals.scorers.faithfulness import FaithfulnessScorer
+
             return FaithfulnessScorer(
                 scale=args.scale,
                 **({"model": args.judge_model} if args.judge_model else {}),
             )
         case "context-sufficiency":
             from evals.scorers.context_sufficiency import ContextSufficiencyScorer
+
             return ContextSufficiencyScorer(
                 **({"model": args.judge_model} if args.judge_model else {})
             )
